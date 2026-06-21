@@ -1,5 +1,7 @@
 # Telegram Personal Finance Tracker
 
+[🇮🇷 نسخه فارسی](README.fa.md)
+
 A full-stack personal finance tracker built as a Telegram bot + Mini App. Track income and expenses, manage multiple accounts, split costs with friends, get AI-powered transaction parsing, and view spending reports — all inside Telegram.
 
 ## Features
