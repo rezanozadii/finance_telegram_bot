@@ -43,10 +43,7 @@ class AiTransactionHandler
         }
 
         if (!config('services.deepseek.api_key')) {
-            Telegram::sendMessage([
-                'chat_id' => $chatId,
-                'text'    => "AI parsing is not configured. Use /add for manual entry.",
-            ]);
+            Telegram::sendMessage(['chat_id' => $chatId, 'text' => __('bot.ai_not_configured')]);
             return;
         }
 
@@ -56,10 +53,7 @@ class AiTransactionHandler
         $result = $this->aiParser->parse($user, $text);
 
         if (!$result || $result->amount <= 0 || $result->accountId === null) {
-            Telegram::sendMessage([
-                'chat_id' => $chatId,
-                'text'    => "🤖 I couldn't parse that as a transaction. Try /add for manual entry.",
-            ]);
+            Telegram::sendMessage(['chat_id' => $chatId, 'text' => __('bot.ai_failed')]);
             return;
         }
 
@@ -113,7 +107,7 @@ class AiTransactionHandler
 
         Telegram::sendMessage([
             'chat_id'      => $chatId,
-            'text'         => "🤖 *Parsed transaction*\n\n" . $this->summaryText($result->toArray()) . $warningText,
+            'text'         => __('bot.ai_confirm', ['summary' => $this->summaryText($result->toArray()) . $warningText]),
             'parse_mode'   => 'Markdown',
             'reply_markup' => json_encode(TransactionKeyboard::aiPreview()),
         ]);
@@ -139,7 +133,7 @@ class AiTransactionHandler
         Telegram::editMessageText([
             'chat_id'    => $chatId,
             'message_id' => $messageId,
-            'text'       => "✅ *Saved!*\n\n" . $this->summaryText($data),
+            'text'       => __('bot.ai_saved') . "\n\n" . $this->summaryText($data),
             'parse_mode' => 'Markdown',
         ]);
     }
@@ -153,7 +147,7 @@ class AiTransactionHandler
         Telegram::editMessageText([
             'chat_id'    => $chatId,
             'message_id' => $messageId,
-            'text'       => "❌ Cancelled.",
+            'text'       => __('bot.cancelled'),
         ]);
     }
 
@@ -170,7 +164,7 @@ class AiTransactionHandler
         Telegram::editMessageText([
             'chat_id'      => $chatId,
             'message_id'   => $messageId,
-            'text'         => "Choose the correct category:",
+            'text'         => __('bot.ai_choose_category'),
             'reply_markup' => json_encode(TransactionKeyboard::aiCategorySelector($categories)),
         ]);
     }
@@ -212,7 +206,7 @@ class AiTransactionHandler
         Telegram::editMessageText([
             'chat_id'      => $chatId,
             'message_id'   => $messageId,
-            'text'         => "Choose the correct account:",
+            'text'         => __('bot.ai_choose_account'),
             'reply_markup' => json_encode(TransactionKeyboard::aiAccountSelector($accounts)),
         ]);
     }
@@ -251,7 +245,7 @@ class AiTransactionHandler
         Telegram::editMessageText([
             'chat_id'      => $chatId,
             'message_id'   => $messageId,
-            'text'         => "🤖 *Parsed transaction*\n\n" . $this->summaryText($result->toArray()),
+            'text'         => __('bot.ai_confirm', ['summary' => $this->summaryText($result->toArray())]),
             'parse_mode'   => 'Markdown',
             'reply_markup' => json_encode(TransactionKeyboard::aiPreview()),
         ]);
@@ -268,27 +262,25 @@ class AiTransactionHandler
     {
         $type = $data['type'] ?? 'expense';
         $typeLabel = match ($type) {
-            'income'   => '💰 Income',
-            'expense'  => '💸 Expense',
+            'income'   => '💰 ' . __('bot.report_income'),
+            'expense'  => '💸 ' . __('bot.report_expenses'),
             'transfer' => '🔄 Transfer',
         };
 
         $currency = $data['currency'] ?? '';
         $amount   = isset($data['amount']) ? number_format((float) $data['amount'], 2) : '—';
 
-        $lines = [
-            "Type: {$typeLabel}",
-        ];
+        $lines = ["Type: {$typeLabel}"];
 
         if ($type === 'transfer') {
             $lines[] = "From: " . ($data['account_name'] ?? '—');
             $lines[] = "To: " . ($data['to_account_name'] ?? '—');
         } else {
-            $lines[] = "Account: " . ($data['account_name'] ?? '—');
-            $lines[] = "Category: " . ($data['category_name'] ?? '—');
+            $lines[] = __('bot.account_list_title') . ": " . ($data['account_name'] ?? '—');
+            $lines[] = __('bot.category_tap_to_edit') . ": " . ($data['category_name'] ?? '—');
         }
 
-        $lines[] = "Amount: {$currency} {$amount}";
+        $lines[] = __('bot.rec_ask_amount') . ": {$currency} {$amount}";
 
         if (!empty($data['merchant'])) {
             $lines[] = "Merchant: {$data['merchant']}";

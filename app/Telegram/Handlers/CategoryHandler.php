@@ -19,8 +19,6 @@ class CategoryHandler
         private ConversationStateService $state,
     ) {}
 
-    // ── Message (text input) steps ──────────────────────────────────────────
-
     public function handleMessage(Message $message, string $step): void
     {
         $telegramId = $message->getFrom()->getId();
@@ -36,8 +34,6 @@ class CategoryHandler
         };
     }
 
-    // ── Callback query steps ────────────────────────────────────────────────
-
     public function handleCallback(CallbackQuery $query, string $action): void
     {
         $telegramId = $query->getFrom()->getId();
@@ -47,22 +43,20 @@ class CategoryHandler
         Telegram::answerCallbackQuery(['callback_query_id' => $query->getId()]);
 
         match (true) {
-            $action === 'category:add'                          => $this->startCreation($telegramId, $chatId),
-            $action === 'category:list'                         => $this->showList($telegramId, $chatId, $messageId),
-            $action === 'category:manage'                       => $this->showManage($telegramId, $chatId, $messageId),
-            str_starts_with($action, 'category_type:')         => $this->stepType($telegramId, $chatId, substr($action, 14)),
-            $action === 'category_icon:skip'                    => $this->stepIconSkip($telegramId, $chatId),
-            str_starts_with($action, 'category_parent:')       => $this->stepParent($telegramId, $chatId, substr($action, 16)),
-            str_starts_with($action, 'category_edit:')         => $this->showActions($telegramId, $chatId, $messageId, (int) substr($action, 14)),
-            str_starts_with($action, 'category_rename:')       => $this->beginRename($telegramId, $chatId, (int) substr($action, 16)),
-            str_starts_with($action, 'category_icon_edit:')    => $this->beginIconEdit($telegramId, $chatId, (int) substr($action, 19)),
-            str_starts_with($action, 'category_delete:')       => $this->confirmDelete($telegramId, $chatId, $messageId, (int) substr($action, 16)),
+            $action === 'category:add'                            => $this->startCreation($telegramId, $chatId),
+            $action === 'category:list'                           => $this->showList($telegramId, $chatId, $messageId),
+            $action === 'category:manage'                         => $this->showManage($telegramId, $chatId, $messageId),
+            str_starts_with($action, 'category_type:')           => $this->stepType($telegramId, $chatId, substr($action, 14)),
+            $action === 'category_icon:skip'                      => $this->stepIconSkip($telegramId, $chatId),
+            str_starts_with($action, 'category_parent:')         => $this->stepParent($telegramId, $chatId, substr($action, 16)),
+            str_starts_with($action, 'category_edit:')           => $this->showActions($telegramId, $chatId, $messageId, (int) substr($action, 14)),
+            str_starts_with($action, 'category_rename:')         => $this->beginRename($telegramId, $chatId, (int) substr($action, 16)),
+            str_starts_with($action, 'category_icon_edit:')      => $this->beginIconEdit($telegramId, $chatId, (int) substr($action, 19)),
+            str_starts_with($action, 'category_delete:') && !str_contains($action, '_confirm') => $this->confirmDelete($telegramId, $chatId, $messageId, (int) substr($action, 16)),
             str_starts_with($action, 'category_delete_confirm:') => $this->doDelete($telegramId, $chatId, $messageId, (int) substr($action, 24)),
             default => null,
         };
     }
-
-    // ── Creation flow ───────────────────────────────────────────────────────
 
     public function startCreation(int|string $telegramId, int|string $chatId): void
     {
@@ -70,7 +64,7 @@ class CategoryHandler
 
         Telegram::sendMessage([
             'chat_id'      => $chatId,
-            'text'         => "Create a new category.\n\nIs it an income or expense category?",
+            'text'         => __('bot.category_ask_type'),
             'reply_markup' => json_encode(CategoryKeyboard::typeSelector()),
         ]);
     }
@@ -79,11 +73,11 @@ class CategoryHandler
     {
         $this->state->set($telegramId, 'category.name', ['type' => $type]);
 
-        $label = $type === 'income' ? '💰 income' : '💸 expense';
+        $label = $type === 'income' ? '💰 ' . __('bot.report_income') : '💸 ' . __('bot.report_expenses');
 
         Telegram::sendMessage([
-            'chat_id' => $chatId,
-            'text'    => "Creating a *{$label}* category.\n\nWhat should it be called?",
+            'chat_id'    => $chatId,
+            'text'       => __('bot.category_ask_name', ['type' => $label]),
             'parse_mode' => 'Markdown',
         ]);
     }
@@ -91,7 +85,7 @@ class CategoryHandler
     private function stepName(int|string $telegramId, int|string $chatId, string $text): void
     {
         if ($text === '') {
-            Telegram::sendMessage(['chat_id' => $chatId, 'text' => 'Please enter a category name.']);
+            Telegram::sendMessage(['chat_id' => $chatId, 'text' => __('bot.account_enter_name_short')]);
             return;
         }
 
@@ -102,7 +96,7 @@ class CategoryHandler
 
         Telegram::sendMessage([
             'chat_id'      => $chatId,
-            'text'         => "Got it: *{$text}*\n\nAdd an emoji icon? (type one, e.g. 🏋️) or skip.",
+            'text'         => __('bot.category_ask_icon', ['name' => $text]),
             'parse_mode'   => 'Markdown',
             'reply_markup' => json_encode(CategoryKeyboard::iconStep()),
         ]);
@@ -120,13 +114,11 @@ class CategoryHandler
 
     private function proceedToParent(int|string $telegramId, int|string $chatId, ?string $icon): void
     {
-        $data = array_merge($this->state->data($telegramId), ['icon' => $icon]);
-        $user = User::where('telegram_id', $telegramId)->firstOrFail();
-
+        $data     = array_merge($this->state->data($telegramId), ['icon' => $icon]);
+        $user     = User::where('telegram_id', $telegramId)->firstOrFail();
         $topLevel = $this->categoryService->topLevel($user, $data['type']);
 
         if ($topLevel->isEmpty()) {
-            // No parents available — create directly as top-level
             $this->createCategory($telegramId, $chatId, $data, null);
             return;
         }
@@ -135,7 +127,7 @@ class CategoryHandler
 
         Telegram::sendMessage([
             'chat_id'      => $chatId,
-            'text'         => "Should this be a sub-category of an existing one?",
+            'text'         => __('bot.category_ask_parent'),
             'reply_markup' => json_encode(CategoryKeyboard::parentSelector($topLevel)),
         ]);
     }
@@ -144,7 +136,6 @@ class CategoryHandler
     {
         $data     = $this->state->data($telegramId);
         $parentId = $value === 'none' ? null : (int) $value;
-
         $this->createCategory($telegramId, $chatId, $data, $parentId);
     }
 
@@ -161,17 +152,14 @@ class CategoryHandler
 
         $this->state->clear($telegramId);
 
-        $icon  = $category->icon ? $category->icon . ' ' : '';
-        $label = $category->type === 'income' ? '💰 income' : '💸 expense';
+        $icon = $category->icon ? $category->icon . ' ' : '';
 
         Telegram::sendMessage([
             'chat_id'    => $chatId,
-            'text'       => "✅ Category created!\n\n{$icon}*{$category->name}* ({$label})",
+            'text'       => __('bot.category_created', ['icon' => $icon, 'name' => $category->name]),
             'parse_mode' => 'Markdown',
         ]);
     }
-
-    // ── List / manage ───────────────────────────────────────────────────────
 
     public function showList(int|string $telegramId, int|string $chatId, ?int $messageId = null): void
     {
@@ -186,11 +174,9 @@ class CategoryHandler
             'reply_markup' => json_encode(CategoryKeyboard::mainMenu()),
         ];
 
-        if ($messageId) {
-            Telegram::editMessageText(array_merge($payload, ['message_id' => $messageId]));
-        } else {
-            Telegram::sendMessage($payload);
-        }
+        $messageId
+            ? Telegram::editMessageText(array_merge($payload, ['message_id' => $messageId]))
+            : Telegram::sendMessage($payload);
     }
 
     private function showManage(int|string $telegramId, int|string $chatId, int $messageId): void
@@ -201,7 +187,7 @@ class CategoryHandler
         Telegram::editMessageText([
             'chat_id'      => $chatId,
             'message_id'   => $messageId,
-            'text'         => "Tap a category to edit it:",
+            'text'         => __('bot.category_tap_to_edit'),
             'reply_markup' => json_encode(CategoryKeyboard::manageGrid($categories)),
         ]);
     }
@@ -213,19 +199,16 @@ class CategoryHandler
             return;
         }
 
-        $icon      = $category->icon ? $category->icon . ' ' : '';
-        $canDelete = $this->categoryService->canDelete($category);
+        $icon = $category->icon ? $category->icon . ' ' : '';
 
         Telegram::editMessageText([
             'chat_id'      => $chatId,
             'message_id'   => $messageId,
-            'text'         => "*{$icon}{$category->name}* ({$category->type})",
+            'text'         => __('bot.category_detail', ['icon' => $icon, 'name' => $category->name, 'type' => $category->type]),
             'parse_mode'   => 'Markdown',
-            'reply_markup' => json_encode(CategoryKeyboard::categoryActions($category, $canDelete)),
+            'reply_markup' => json_encode(CategoryKeyboard::categoryActions($category, $this->categoryService->canDelete($category))),
         ]);
     }
-
-    // ── Rename flow ─────────────────────────────────────────────────────────
 
     private function beginRename(int|string $telegramId, int|string $chatId, int $categoryId): void
     {
@@ -238,7 +221,7 @@ class CategoryHandler
 
         Telegram::sendMessage([
             'chat_id'    => $chatId,
-            'text'       => "Enter the new name for *{$category->name}*:",
+            'text'       => __('bot.category_ask_rename', ['name' => $category->name]),
             'parse_mode' => 'Markdown',
         ]);
     }
@@ -246,7 +229,7 @@ class CategoryHandler
     private function stepRename(int|string $telegramId, int|string $chatId, string $text): void
     {
         if ($text === '') {
-            Telegram::sendMessage(['chat_id' => $chatId, 'text' => 'Please enter a name.']);
+            Telegram::sendMessage(['chat_id' => $chatId, 'text' => __('bot.account_enter_name_short')]);
             return;
         }
 
@@ -258,18 +241,15 @@ class CategoryHandler
             return;
         }
 
-        $old = $category->name;
         $this->categoryService->rename($category, $text);
         $this->state->clear($telegramId);
 
         Telegram::sendMessage([
             'chat_id'    => $chatId,
-            'text'       => "✅ Renamed *{$old}* → *{$text}*",
+            'text'       => __('bot.category_renamed', ['name' => $text]),
             'parse_mode' => 'Markdown',
         ]);
     }
-
-    // ── Icon edit flow ──────────────────────────────────────────────────────
 
     private function beginIconEdit(int|string $telegramId, int|string $chatId, int $categoryId): void
     {
@@ -281,8 +261,8 @@ class CategoryHandler
         $this->state->set($telegramId, 'category.icon_edit', ['category_id' => $categoryId]);
 
         Telegram::sendMessage([
-            'chat_id' => $chatId,
-            'text'    => "Send the new emoji icon for *{$category->name}*:",
+            'chat_id'    => $chatId,
+            'text'       => __('bot.category_ask_icon_edit', ['name' => $category->name]),
             'parse_mode' => 'Markdown',
         ]);
     }
@@ -290,7 +270,7 @@ class CategoryHandler
     private function stepIconEdit(int|string $telegramId, int|string $chatId, string $text): void
     {
         if ($text === '') {
-            Telegram::sendMessage(['chat_id' => $chatId, 'text' => 'Please send an emoji.']);
+            Telegram::sendMessage(['chat_id' => $chatId, 'text' => __('bot.account_enter_name_short')]);
             return;
         }
 
@@ -307,12 +287,10 @@ class CategoryHandler
 
         Telegram::sendMessage([
             'chat_id'    => $chatId,
-            'text'       => "✅ Icon for *{$category->name}* updated to {$text}",
+            'text'       => __('bot.category_icon_updated', ['icon' => $text]),
             'parse_mode' => 'Markdown',
         ]);
     }
-
-    // ── Delete flow ─────────────────────────────────────────────────────────
 
     private function confirmDelete(int|string $telegramId, int|string $chatId, int $messageId, int $categoryId): void
     {
@@ -322,13 +300,10 @@ class CategoryHandler
         }
 
         if (!$this->categoryService->canDelete($category)) {
-            Telegram::answerCallbackQuery([
-                'callback_query_id' => '', // already answered above, this is just a message edit
-            ]);
             Telegram::editMessageText([
                 'chat_id'      => $chatId,
                 'message_id'   => $messageId,
-                'text'         => "⚠️ *{$category->name}* can't be deleted because it has transactions.\n\nYou can rename it instead.",
+                'text'         => __('bot.category_has_transactions'),
                 'parse_mode'   => 'Markdown',
                 'reply_markup' => json_encode(CategoryKeyboard::categoryActions($category, false)),
             ]);
@@ -338,7 +313,7 @@ class CategoryHandler
         Telegram::editMessageText([
             'chat_id'      => $chatId,
             'message_id'   => $messageId,
-            'text'         => "Delete *{$category->name}*? This can't be undone.",
+            'text'         => __('bot.category_confirm_delete', ['name' => $category->name]),
             'parse_mode'   => 'Markdown',
             'reply_markup' => json_encode(CategoryKeyboard::confirmDelete($category)),
         ]);
@@ -351,14 +326,13 @@ class CategoryHandler
             return;
         }
 
-        $name    = $category->name;
         $deleted = $this->categoryService->delete($category);
 
         if (!$deleted) {
             Telegram::editMessageText([
                 'chat_id'    => $chatId,
                 'message_id' => $messageId,
-                'text'       => "⚠️ Can't delete *{$name}* — it has transactions.",
+                'text'       => __('bot.category_has_transactions'),
                 'parse_mode' => 'Markdown',
             ]);
             return;
@@ -367,17 +341,13 @@ class CategoryHandler
         Telegram::editMessageText([
             'chat_id'    => $chatId,
             'message_id' => $messageId,
-            'text'       => "🗑 *{$name}* has been deleted.",
-            'parse_mode' => 'Markdown',
+            'text'       => __('bot.category_deleted'),
         ]);
     }
-
-    // ── Helpers ─────────────────────────────────────────────────────────────
 
     private function ownedCategory(int|string $telegramId, int $categoryId): ?Category
     {
         $user = User::where('telegram_id', $telegramId)->first();
-
         return $user?->categories()->find($categoryId);
     }
 
@@ -386,33 +356,29 @@ class CategoryHandler
         $expense = $categories->where('type', 'expense')->where('parent_id', null);
         $income  = $categories->where('type', 'income')->where('parent_id', null);
 
-        $lines = ["📋 *Your Categories*\n"];
+        $lines = ["📋 *" . __('bot.rec_list_title') . "*\n"];
 
         if ($expense->isNotEmpty()) {
-            $lines[] = "💸 *Expense* ({$expense->count()})";
+            $lines[] = "💸 *" . __('bot.report_expenses') . "* ({$expense->count()})";
             foreach ($expense as $cat) {
-                $icon = $cat->icon ? $cat->icon . ' ' : '• ';
+                $icon    = $cat->icon ? $cat->icon . ' ' : '• ';
                 $lines[] = "  {$icon}{$cat->name}";
-
-                $children = $categories->where('parent_id', $cat->id);
-                foreach ($children as $child) {
-                    $childIcon = $child->icon ? $child->icon . ' ' : '◦ ';
-                    $lines[] = "    ↳ {$childIcon}{$child->name}";
+                foreach ($categories->where('parent_id', $cat->id) as $child) {
+                    $ci      = $child->icon ? $child->icon . ' ' : '◦ ';
+                    $lines[] = "    ↳ {$ci}{$child->name}";
                 }
             }
         }
 
         if ($income->isNotEmpty()) {
             $lines[] = '';
-            $lines[] = "💰 *Income* ({$income->count()})";
+            $lines[] = "💰 *" . __('bot.report_income') . "* ({$income->count()})";
             foreach ($income as $cat) {
-                $icon = $cat->icon ? $cat->icon . ' ' : '• ';
+                $icon    = $cat->icon ? $cat->icon . ' ' : '• ';
                 $lines[] = "  {$icon}{$cat->name}";
-
-                $children = $categories->where('parent_id', $cat->id);
-                foreach ($children as $child) {
-                    $childIcon = $child->icon ? $child->icon . ' ' : '◦ ';
-                    $lines[] = "    ↳ {$childIcon}{$child->name}";
+                foreach ($categories->where('parent_id', $cat->id) as $child) {
+                    $ci      = $child->icon ? $child->icon . ' ' : '◦ ';
+                    $lines[] = "    ↳ {$ci}{$child->name}";
                 }
             }
         }

@@ -25,11 +25,10 @@ class BalanceCommand extends Command
         $friends       = $friendService->getFriends($user);
 
         if ($friends->isEmpty()) {
-            $this->replyWithMessage(['text' => "You have no friends yet. Use /addfriend to add one."]);
+            $this->replyWithMessage(['text' => __('bot.balance_no_friends')]);
             return;
         }
 
-        // Optional: filter to a specific friend if username provided
         $text     = $this->getUpdate()->getMessage()->getText() ?? '';
         $parts    = explode(' ', trim($text), 2);
         $username = ltrim(trim($parts[1] ?? ''), '@');
@@ -37,29 +36,29 @@ class BalanceCommand extends Command
         if ($username !== '') {
             $friends = $friends->filter(fn (User $f) => strtolower($f->username ?? '') === strtolower($username));
             if ($friends->isEmpty()) {
-                $this->replyWithMessage(['text' => "You're not friends with @{$username}."]);
+                $this->replyWithMessage(['text' => __('bot.balance_not_friend', ['username' => $username])]);
                 return;
             }
         }
 
-        $lines = ["💰 *Balances*\n"];
+        $lines = ["💰 *" . __('bot.report_net') . "*\n"];
 
         foreach ($friends as $friend) {
             $balances = $friendService->getBalance($user, $friend);
             $name     = $friend->username ? '@' . $friend->username : $friend->display_name;
 
             if (empty($balances)) {
-                $lines[] = "{$name}: ✅ settled";
+                $lines[] = "{$name}: " . __('bot.friend_settled');
                 continue;
             }
 
             foreach ($balances as $currency => $amount) {
                 if (abs($amount) < 0.01) {
-                    $lines[] = "{$name}: ✅ settled";
+                    $lines[] = "{$name}: " . __('bot.friend_settled');
                 } elseif ($amount > 0) {
-                    $lines[] = "{$name}: they owe you *{$currency} " . number_format($amount, 2) . "*";
+                    $lines[] = "{$name}: *" . __('bot.friend_they_owe', ['currency' => $currency, 'amount' => number_format($amount, 2)]) . "*";
                 } else {
-                    $lines[] = "{$name}: you owe them *{$currency} " . number_format(abs($amount), 2) . "*";
+                    $lines[] = "{$name}: *" . __('bot.friend_you_owe', ['currency' => $currency, 'amount' => number_format(abs($amount), 2)]) . "*";
                 }
             }
         }

@@ -78,14 +78,14 @@ class RecurringHandler
 
         Telegram::sendMessage([
             'chat_id' => $chatId,
-            'text'    => "Set up a recurring transaction.\n\nWhat's it called? (e.g. Rent, Netflix, Salary)",
+            'text'    => __('bot.rec_ask_name'),
         ]);
     }
 
     private function stepDescription(int|string $telegramId, int|string $chatId, string $text): void
     {
         if ($text === '') {
-            Telegram::sendMessage(['chat_id' => $chatId, 'text' => 'Please enter a name for this recurring transaction.']);
+            Telegram::sendMessage(['chat_id' => $chatId, 'text' => __('bot.account_enter_name_short')]);
             return;
         }
 
@@ -93,7 +93,7 @@ class RecurringHandler
 
         Telegram::sendMessage([
             'chat_id'      => $chatId,
-            'text'         => "Is *{$text}* an income or expense?",
+            'text'         => __('bot.rec_ask_type', ['name' => $text]),
             'parse_mode'   => 'Markdown',
             'reply_markup' => json_encode(RecurringKeyboard::typeSelector()),
         ]);
@@ -112,7 +112,7 @@ class RecurringHandler
         Telegram::editMessageText([
             'chat_id'      => $chatId,
             'message_id'   => $messageId,
-            'text'         => "Which category?",
+            'text'         => __('bot.txn_ask_category'),
             'reply_markup' => json_encode(RecurringKeyboard::categorySelector($categories)),
         ]);
     }
@@ -135,7 +135,7 @@ class RecurringHandler
         Telegram::editMessageText([
             'chat_id'      => $chatId,
             'message_id'   => $messageId,
-            'text'         => "Which account should this be charged to?",
+            'text'         => __('bot.rec_ask_account'),
             'reply_markup' => json_encode(RecurringKeyboard::accountSelector($accounts)),
         ]);
     }
@@ -156,7 +156,7 @@ class RecurringHandler
         Telegram::editMessageText([
             'chat_id'    => $chatId,
             'message_id' => $messageId,
-            'text'       => "What's the amount? ({$account->currency})",
+            'text'       => __('bot.txn_ask_amount', ['currency' => $account->currency]),
         ]);
     }
 
@@ -174,7 +174,7 @@ class RecurringHandler
 
         Telegram::sendMessage([
             'chat_id'      => $chatId,
-            'text'         => "How often does this recur?",
+            'text'         => __('bot.rec_ask_frequency'),
             'reply_markup' => json_encode(RecurringKeyboard::frequencySelector()),
         ]);
     }
@@ -189,7 +189,7 @@ class RecurringHandler
         Telegram::editMessageText([
             'chat_id'    => $chatId,
             'message_id' => $messageId,
-            'text'       => "When is the first due date?\nEnter a date (YYYY-MM-DD) or type *today*.",
+            'text'       => __('bot.rec_ask_start_date'),
             'parse_mode' => 'Markdown',
         ]);
     }
@@ -202,7 +202,7 @@ class RecurringHandler
             try {
                 $date = Carbon::parse($text)->toDateString();
             } catch (\Throwable) {
-                Telegram::sendMessage(['chat_id' => $chatId, 'text' => 'Please enter a valid date (YYYY-MM-DD) or type "today".']);
+                Telegram::sendMessage(['chat_id' => $chatId, 'text' => __('bot.rec_invalid_date')]);
                 return;
             }
         }
@@ -214,7 +214,7 @@ class RecurringHandler
 
         Telegram::sendMessage([
             'chat_id'      => $chatId,
-            'text'         => "Would you like a reminder before the due date?",
+            'text'         => __('bot.rec_ask_reminder'),
             'reply_markup' => json_encode(RecurringKeyboard::reminderSelector()),
         ]);
     }
@@ -240,11 +240,12 @@ class RecurringHandler
         Telegram::editMessageText([
             'chat_id'    => $chatId,
             'message_id' => $messageId,
-            'text'       => "✅ *Recurring transaction set up!*\n\n" .
-                "📝 {$template->description}\n" .
-                "💰 {$template->currency} " . number_format($template->amount, 2) . "\n" .
-                "🔁 {$freqLabel} · Next due: {$dateLabel}\n" .
-                "🔔 {$reminder}",
+            'text'       => __('bot.rec_created', [
+                'name'      => $template->description,
+                'currency'  => $template->currency,
+                'amount'    => number_format($template->amount, 2),
+                'frequency' => $freqLabel,
+            ]) . "\n🔁 {$freqLabel} · Next: {$dateLabel}\n🔔 {$reminder}",
             'parse_mode' => 'Markdown',
         ]);
     }
@@ -258,12 +259,12 @@ class RecurringHandler
 
         Telegram::sendMessage([
             'chat_id'      => $template->user->telegram_id,
-            'text'         => "📅 *Recurring payment due*\n\n" .
-                "{$icon}*{$template->description}*\n" .
-                "Amount: {$template->currency} " . number_format($template->amount, 2) . "\n" .
-                "Account: {$template->account->name}\n" .
-                "Type: {$typeLabel}\n" .
-                "Due: " . $template->next_due_date->format('M d, Y'),
+            'text'         => __('bot.rec_due_msg', [
+                'name'     => "{$icon}{$template->description}",
+                'currency' => $template->currency,
+                'amount'   => number_format($template->amount, 2),
+                'date'     => $template->next_due_date->format('Y-m-d'),
+            ]),
             'parse_mode'   => 'Markdown',
             'reply_markup' => json_encode(RecurringKeyboard::dueConfirmation($occurrence)),
         ]);
@@ -275,9 +276,12 @@ class RecurringHandler
 
         Telegram::sendMessage([
             'chat_id'    => $template->user->telegram_id,
-            'text'       => "⏰ *Reminder:* {$template->description} ({$template->currency} " .
-                number_format($template->amount, 2) . ") is due in {$daysUntil} day(s) on " .
-                $template->next_due_date->format('M d, Y') . ".",
+            'text'       => __('bot.rec_reminder_msg', [
+                'name'     => $template->description,
+                'currency' => $template->currency,
+                'amount'   => number_format($template->amount, 2),
+                'date'     => $template->next_due_date->format('Y-m-d'),
+            ]),
             'parse_mode' => 'Markdown',
         ]);
     }
@@ -297,9 +301,9 @@ class RecurringHandler
         Telegram::editMessageText([
             'chat_id'    => $chatId,
             'message_id' => $messageId,
-            'text'       => "✅ *Logged!*\n\n{$template->description} — {$template->currency} " .
-                number_format($txn->amount, 2) . "\n" .
-                "Next due: " . $template->fresh()->next_due_date->format('M d, Y'),
+            'text'       => __('bot.rec_confirmed', ['name' => $template->description]) . "\n" .
+                "{$template->currency} " . number_format($txn->amount, 2) . " · " .
+                $template->fresh()->next_due_date->format('Y-m-d'),
             'parse_mode' => 'Markdown',
         ]);
     }
@@ -317,8 +321,8 @@ class RecurringHandler
         Telegram::editMessageText([
             'chat_id'    => $chatId,
             'message_id' => $messageId,
-            'text'       => "⏭ *Skipped.*\n\n{$template->description}\n" .
-                "Next due: " . $template->fresh()->next_due_date->format('M d, Y'),
+            'text'       => __('bot.rec_skipped') . "\n\n{$template->description}\n" .
+                $template->fresh()->next_due_date->format('Y-m-d'),
             'parse_mode' => 'Markdown',
         ]);
     }
@@ -335,7 +339,7 @@ class RecurringHandler
         $template = $occurrence->template;
         Telegram::sendMessage([
             'chat_id'    => $chatId,
-            'text'       => "Enter the actual amount for *{$template->description}* (default: {$template->currency} " . number_format($template->amount, 2) . "):",
+            'text'       => __('bot.rec_ask_confirm_amount', ['name' => $template->description, 'currency' => $template->currency, 'amount' => number_format($template->amount, 2)]),
             'parse_mode' => 'Markdown',
         ]);
     }
@@ -362,9 +366,9 @@ class RecurringHandler
 
         Telegram::sendMessage([
             'chat_id'    => $chatId,
-            'text'       => "✅ *Logged!*\n\n{$template->description} — {$template->currency} " .
-                number_format($txn->amount, 2) . "\n" .
-                "Next due: " . $template->fresh()->next_due_date->format('M d, Y'),
+            'text'       => __('bot.rec_confirmed', ['name' => $template->description]) . "\n" .
+                "{$template->currency} " . number_format($txn->amount, 2) . " · " .
+                $template->fresh()->next_due_date->format('Y-m-d'),
             'parse_mode' => 'Markdown',
         ]);
     }
@@ -429,7 +433,7 @@ class RecurringHandler
         Telegram::editMessageText([
             'chat_id'      => $chatId,
             'message_id'   => $messageId,
-            'text'         => "Deactivate *{$template->description}*? You won't receive any more reminders or due-date prompts.",
+            'text'         => __('bot.rec_confirm_deactivate', ['name' => $template->description]),
             'parse_mode'   => 'Markdown',
             'reply_markup' => json_encode(RecurringKeyboard::confirmDeactivate($template)),
         ]);
@@ -447,7 +451,7 @@ class RecurringHandler
         Telegram::editMessageText([
             'chat_id'    => $chatId,
             'message_id' => $messageId,
-            'text'       => "🔴 *{$template->description}* has been deactivated.",
+            'text'       => __('bot.rec_deactivated', ['name' => $template->description]),
             'parse_mode' => 'Markdown',
         ]);
     }
@@ -459,7 +463,7 @@ class RecurringHandler
         Telegram::editMessageText([
             'chat_id'    => $chatId,
             'message_id' => $messageId,
-            'text'       => "❌ Cancelled.",
+            'text'       => __('bot.cancelled'),
         ]);
     }
 

@@ -105,17 +105,14 @@ class FriendHandler
     {
         $this->state->set($telegramId, 'friend.add_username');
 
-        Telegram::sendMessage([
-            'chat_id' => $chatId,
-            'text'    => "Enter the Telegram username of the person you want to add (e.g. @alice):",
-        ]);
+        Telegram::sendMessage(['chat_id' => $chatId, 'text' => __('bot.friend_ask_username')]);
     }
 
     public function handleAddFriendCommand(int|string $telegramId, int|string $chatId, string $username): void
     {
         if ($username === '') {
             $this->state->set($telegramId, 'friend.add_username');
-            Telegram::sendMessage(['chat_id' => $chatId, 'text' => "Who do you want to add? Enter their @username:"]);
+            Telegram::sendMessage(['chat_id' => $chatId, 'text' => __('bot.friend_ask_username')]);
             return;
         }
 
@@ -135,22 +132,22 @@ class FriendHandler
 
         if (!$target) {
             Telegram::sendMessage([
-                'chat_id' => $chatId,
-                'text'    => "❌ User *" . ltrim($usernameInput, '@') . "* hasn't started this bot yet.",
+                'chat_id'    => $chatId,
+                'text'       => __('bot.friend_not_found', ['username' => ltrim($usernameInput, '@')]),
                 'parse_mode' => 'Markdown',
             ]);
             return;
         }
 
         if ($target->id === $from->id) {
-            Telegram::sendMessage(['chat_id' => $chatId, 'text' => "You can't add yourself as a friend."]);
+            Telegram::sendMessage(['chat_id' => $chatId, 'text' => __('bot.friend_self')]);
             return;
         }
 
         $friendship = $this->friendService->sendRequest($from, $target);
 
         if (!$friendship) {
-            Telegram::sendMessage(['chat_id' => $chatId, 'text' => "You're already friends or a request already exists."]);
+            Telegram::sendMessage(['chat_id' => $chatId, 'text' => __('bot.friend_already')]);
             return;
         }
 
@@ -158,7 +155,7 @@ class FriendHandler
         $targetName = $target->username ? '@' . $target->username : $target->display_name;
         Telegram::sendMessage([
             'chat_id'    => $chatId,
-            'text'       => "✅ Friend request sent to *{$targetName}*!",
+            'text'       => __('bot.friend_request_sent', ['name' => $targetName]),
             'parse_mode' => 'Markdown',
         ]);
 
@@ -167,7 +164,7 @@ class FriendHandler
         try {
             Telegram::sendMessage([
                 'chat_id'      => $target->telegram_id,
-                'text'         => "🤝 *{$fromName}* wants to be your friend on Finance Tracker!",
+                'text'         => __('bot.friend_request_received', ['name' => $fromName]),
                 'parse_mode'   => 'Markdown',
                 'reply_markup' => json_encode(FriendKeyboard::friendRequest($friendship)),
             ]);
@@ -187,8 +184,8 @@ class FriendHandler
             'chat_id'      => $chatId,
             'message_id'   => $messageId,
             'text'         => $pending->isEmpty()
-                ? "No pending friend requests."
-                : "🔔 *Pending requests* ({$pending->count()})",
+                ? __('bot.friend_no_pending')
+                : __('bot.friend_pending_title', ['count' => $pending->count()]),
             'parse_mode'   => 'Markdown',
             'reply_markup' => json_encode(FriendKeyboard::pendingRequests($pending)),
         ]);
@@ -208,7 +205,7 @@ class FriendHandler
         Telegram::editMessageText([
             'chat_id'      => $chatId,
             'message_id'   => $messageId,
-            'text'         => "🤝 *{$name}* wants to be your friend.",
+            'text'         => __('bot.friend_request_received', ['name' => $name]),
             'parse_mode'   => 'Markdown',
             'reply_markup' => json_encode(FriendKeyboard::friendRequest($friendship)),
         ]);
@@ -228,7 +225,7 @@ class FriendHandler
         Telegram::editMessageText([
             'chat_id'    => $chatId,
             'message_id' => $messageId,
-            'text'       => "✅ You're now friends with *{$name}*!",
+            'text'       => __('bot.friend_accepted', ['name' => $name]),
             'parse_mode' => 'Markdown',
         ]);
 
@@ -237,7 +234,7 @@ class FriendHandler
             $acceptorName = User::where('telegram_id', $telegramId)->value('display_name');
             Telegram::sendMessage([
                 'chat_id'    => $friendship->user->telegram_id,
-                'text'       => "✅ *{$acceptorName}* accepted your friend request!",
+                'text'       => __('bot.friend_accept_notify', ['name' => $acceptorName]),
                 'parse_mode' => 'Markdown',
             ]);
         } catch (\Throwable) {}
@@ -256,7 +253,7 @@ class FriendHandler
         Telegram::editMessageText([
             'chat_id'    => $chatId,
             'message_id' => $messageId,
-            'text'       => "❌ Friend request from *{$name}* declined.",
+            'text'       => __('bot.friend_declined', ['name' => $name]),
             'parse_mode' => 'Markdown',
         ]);
     }
@@ -279,7 +276,7 @@ class FriendHandler
         Telegram::editMessageText([
             'chat_id'      => $chatId,
             'message_id'   => $messageId,
-            'text'         => "👤 *{$name}*\n\nBalance: {$balanceStr}",
+            'text'         => "👤 *{$name}*\n\n{$balanceStr}",
             'parse_mode'   => 'Markdown',
             'reply_markup' => json_encode(FriendKeyboard::friendActions($friend)),
         ]);
@@ -305,7 +302,7 @@ class FriendHandler
         Telegram::editMessageText([
             'chat_id'      => $chatId,
             'message_id'   => $messageId,
-            'text'         => "Log a shared expense with *{$friend->display_name}*.\n\nWho paid?",
+            'text'         => __('bot.friend_expense_who_paid', ['name' => $friend->display_name]),
             'parse_mode'   => 'Markdown',
             'reply_markup' => json_encode(FriendKeyboard::payerSelector($friend)),
         ]);
@@ -321,7 +318,7 @@ class FriendHandler
         Telegram::editMessageText([
             'chat_id'    => $chatId,
             'message_id' => $messageId,
-            'text'       => "How much? (enter amount)",
+            'text'       => __('bot.friend_expense_ask_amount'),
         ]);
     }
 
@@ -339,7 +336,7 @@ class FriendHandler
 
         Telegram::sendMessage([
             'chat_id'      => $chatId,
-            'text'         => "What was it for? (optional description)",
+            'text'         => __('bot.friend_expense_ask_note'),
             'reply_markup' => json_encode(FriendKeyboard::noteStep()),
         ]);
     }
@@ -405,7 +402,7 @@ class FriendHandler
         Telegram::editMessageText([
             'chat_id'    => $chatId,
             'message_id' => $messageId,
-            'text'       => "✅ Shared expense logged!\n\n" . $this->expenseSummaryText($data),
+            'text'       => __('bot.friend_expense_logged', ['summary' => $this->expenseSummaryText($data)]),
             'parse_mode' => 'Markdown',
         ]);
     }
@@ -413,7 +410,7 @@ class FriendHandler
     private function cancelExpense(int|string $telegramId, int|string $chatId, int $messageId): void
     {
         $this->state->clear($telegramId);
-        Telegram::editMessageText(['chat_id' => $chatId, 'message_id' => $messageId, 'text' => "❌ Cancelled."]);
+        Telegram::editMessageText(['chat_id' => $chatId, 'message_id' => $messageId, 'text' => __('bot.cancelled')]);
     }
 
     // ── Settle up ────────────────────────────────────────────────────────────
@@ -434,7 +431,7 @@ class FriendHandler
             Telegram::editMessageText([
                 'chat_id'    => $chatId,
                 'message_id' => $messageId,
-                'text'       => "You and *{$name}* are already settled up! ✅",
+                'text'       => __('bot.friend_already_settled', ['name' => $name]),
                 'parse_mode' => 'Markdown',
             ]);
             return;
@@ -443,7 +440,7 @@ class FriendHandler
         Telegram::editMessageText([
             'chat_id'      => $chatId,
             'message_id'   => $messageId,
-            'text'         => "Settle up with *{$name}*?\n\nCurrent balance: " . $this->formatBalances($balances) . "\n\nAll open shared expenses will be marked as settled.",
+            'text'         => __('bot.friend_settle_confirm', ['name' => $name, 'balance' => $this->formatBalances($balances)]),
             'parse_mode'   => 'Markdown',
             'reply_markup' => json_encode(FriendKeyboard::settleConfirmation($friend)),
         ]);
@@ -464,7 +461,7 @@ class FriendHandler
         Telegram::editMessageText([
             'chat_id'    => $chatId,
             'message_id' => $messageId,
-            'text'       => "✅ Settled up with *{$name}*! ({$count} expense(s) marked as settled)",
+            'text'       => __('bot.friend_settle_done', ['name' => $name, 'count' => $count]),
             'parse_mode' => 'Markdown',
         ]);
 
@@ -473,7 +470,7 @@ class FriendHandler
             $myName = $user->username ? '@' . $user->username : $user->display_name;
             Telegram::sendMessage([
                 'chat_id'    => $friend->telegram_id,
-                'text'       => "✅ *{$myName}* marked all shared expenses between you as settled.",
+                'text'       => __('bot.friend_settle_notify', ['name' => $myName]),
                 'parse_mode' => 'Markdown',
             ]);
         } catch (\Throwable) {}
@@ -495,7 +492,7 @@ class FriendHandler
     private function formatBalances(array $balances): string
     {
         if (empty($balances)) {
-            return '✅ Settled';
+            return __('bot.friend_settled');
         }
 
         $parts = [];
@@ -504,28 +501,24 @@ class FriendHandler
                 continue;
             }
             if ($amount > 0) {
-                $parts[] = "they owe you {$currency} " . number_format($amount, 2);
+                $parts[] = __('bot.friend_they_owe', ['currency' => $currency, 'amount' => number_format($amount, 2)]);
             } else {
-                $parts[] = "you owe them {$currency} " . number_format(abs($amount), 2);
+                $parts[] = __('bot.friend_you_owe', ['currency' => $currency, 'amount' => number_format(abs($amount), 2)]);
             }
         }
 
-        return $parts ? implode(', ', $parts) : '✅ Settled';
+        return $parts ? implode(', ', $parts) : __('bot.friend_settled');
     }
 
     private function expenseSummaryText(array $data): string
     {
-        $paidBy  = $data['payer'] === 'me' ? 'You paid' : ($data['friend_name'] . ' paid');
-        $owes    = $data['payer'] === 'me' ? $data['friend_name'] . ' owes you' : 'You owe ' . $data['friend_name'];
-        $amount  = number_format((float) ($data['amount'] ?? 0), 2);
+        $amount   = number_format((float) ($data['amount'] ?? 0), 2);
         $currency = $data['currency'] ?? '';
 
         $lines = [
             "💸 *Shared Expense*\n",
             "With: {$data['friend_name']}",
-            "Paid by: {$paidBy}",
             "Amount: {$currency} {$amount}",
-            "Result: {$owes} {$currency} {$amount}",
         ];
 
         if (!empty($data['description'])) {

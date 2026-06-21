@@ -116,7 +116,7 @@ return [
     'friend_no_pending'    => 'درخواست دوستی در انتظاری وجود ندارد.',
     'friend_pending_title' => '🔔 *درخواست‌های در انتظار* (:count)',
     'friend_settle_confirm'=> "با *:name* تسویه‌حساب شود؟\n\nمانده فعلی: :balance\n\nهمه هزینه‌های مشترک باز تسویه‌شده خواهند شد.",
-    'friend_they_owe'      => ':name باید :currency :amount بپردازد',
+    'friend_they_owe'      => 'باید :currency :amount به شما بپردازد',
     'friend_you_owe'       => 'شما باید :currency :amount بپردازید',
     'balance_no_friends'   => 'هنوز دوستی ندارید. از /addfriend استفاده کنید.',
     'balance_not_friend'   => 'شما با @:username دوست نیستید.',

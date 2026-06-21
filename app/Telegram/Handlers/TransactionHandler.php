@@ -23,8 +23,6 @@ class TransactionHandler
         private ConversationStateService $state,
     ) {}
 
-    // ── Message (text input) steps ──────────────────────────────────────────
-
     public function handleMessage(Message $message, string $step): void
     {
         $telegramId = $message->getFrom()->getId();
@@ -37,8 +35,6 @@ class TransactionHandler
             default      => null,
         };
     }
-
-    // ── Callback query steps ────────────────────────────────────────────────
 
     public function handleCallback(CallbackQuery $query, string $action): void
     {
@@ -60,18 +56,13 @@ class TransactionHandler
         };
     }
 
-    // ── Start flow ──────────────────────────────────────────────────────────
-
     public function startManualEntry(int|string $telegramId, int|string $chatId): void
     {
         $user     = User::where('telegram_id', $telegramId)->first();
         $accounts = $user ? $this->accountService->listActive($user) : collect();
 
         if ($accounts->isEmpty()) {
-            Telegram::sendMessage([
-                'chat_id' => $chatId,
-                'text'    => "You have no accounts yet. Use /accounts to create one first.",
-            ]);
+            Telegram::sendMessage(['chat_id' => $chatId, 'text' => __('bot.account_no_accounts_for_txn')]);
             return;
         }
 
@@ -79,12 +70,10 @@ class TransactionHandler
 
         Telegram::sendMessage([
             'chat_id'      => $chatId,
-            'text'         => "New transaction. What type?",
+            'text'         => __('bot.txn_ask_type'),
             'reply_markup' => json_encode(TransactionKeyboard::typeSelector()),
         ]);
     }
-
-    // ── Conversation steps ──────────────────────────────────────────────────
 
     private function stepType(int|string $telegramId, int|string $chatId, int $messageId, string $type): void
     {
@@ -93,7 +82,9 @@ class TransactionHandler
 
         $this->state->set($telegramId, 'txn.account', ['type' => $type]);
 
-        $prompt = $type === 'transfer' ? "Transfer *from* which account?" : "Which account?";
+        $prompt = $type === 'transfer'
+            ? "↔️ " . __('bot.txn_ask_to_account')
+            : __('bot.txn_ask_category');
 
         Telegram::editMessageText([
             'chat_id'      => $chatId,
@@ -118,14 +109,14 @@ class TransactionHandler
         $data['currency']     = $account->currency;
 
         if ($data['type'] === 'transfer') {
-            $user         = User::where('telegram_id', $telegramId)->firstOrFail();
+            $user          = User::where('telegram_id', $telegramId)->firstOrFail();
             $otherAccounts = $this->accountService->listActive($user)->where('id', '!=', $accountId);
 
             if ($otherAccounts->isEmpty()) {
                 Telegram::editMessageText([
                     'chat_id'    => $chatId,
                     'message_id' => $messageId,
-                    'text'       => "You need at least 2 accounts to make a transfer.",
+                    'text'       => __('bot.account_no_accounts_for_txn'),
                 ]);
                 $this->state->clear($telegramId);
                 return;
@@ -136,14 +127,13 @@ class TransactionHandler
             Telegram::editMessageText([
                 'chat_id'      => $chatId,
                 'message_id'   => $messageId,
-                'text'         => "Transfer *to* which account?",
+                'text'         => __('bot.txn_ask_to_account'),
                 'parse_mode'   => 'Markdown',
                 'reply_markup' => json_encode(TransactionKeyboard::accountSelector($otherAccounts, 'txn_to_account')),
             ]);
             return;
         }
 
-        // Income or expense — pick category
         $user       = User::where('telegram_id', $telegramId)->firstOrFail();
         $categories = $this->categoryService->topLevel($user, $data['type']);
 
@@ -152,7 +142,7 @@ class TransactionHandler
         Telegram::editMessageText([
             'chat_id'      => $chatId,
             'message_id'   => $messageId,
-            'text'         => "Which category?",
+            'text'         => __('bot.txn_ask_category'),
             'reply_markup' => json_encode(TransactionKeyboard::categorySelector($categories)),
         ]);
     }
@@ -164,8 +154,8 @@ class TransactionHandler
             return;
         }
 
-        $data                   = $this->state->data($telegramId);
-        $data['to_account_id']  = $toAccountId;
+        $data                    = $this->state->data($telegramId);
+        $data['to_account_id']   = $toAccountId;
         $data['to_account_name'] = $account->name;
 
         $this->state->set($telegramId, 'txn.amount', $data);
@@ -173,7 +163,7 @@ class TransactionHandler
         Telegram::editMessageText([
             'chat_id'    => $chatId,
             'message_id' => $messageId,
-            'text'       => "Amount to transfer?",
+            'text'       => __('bot.txn_ask_transfer_amount'),
         ]);
     }
 
@@ -193,14 +183,14 @@ class TransactionHandler
         Telegram::editMessageText([
             'chat_id'    => $chatId,
             'message_id' => $messageId,
-            'text'       => "Amount?",
+            'text'       => __('bot.txn_ask_amount', ['currency' => $data['currency'] ?? '']),
         ]);
     }
 
     private function stepAmount(int|string $telegramId, int|string $chatId, string $text): void
     {
         if (!is_numeric($text) || (float) $text <= 0) {
-            Telegram::sendMessage(['chat_id' => $chatId, 'text' => 'Please enter a positive number (e.g. 25 or 9.99).']);
+            Telegram::sendMessage(['chat_id' => $chatId, 'text' => __('bot.enter_positive_number')]);
             return;
         }
 
@@ -211,14 +201,14 @@ class TransactionHandler
 
         Telegram::sendMessage([
             'chat_id'      => $chatId,
-            'text'         => "Add a note? (optional)",
+            'text'         => __('bot.txn_ask_note'),
             'reply_markup' => json_encode(TransactionKeyboard::noteStep()),
         ]);
     }
 
     private function stepNote(int|string $telegramId, int|string $chatId, string $text): void
     {
-        $data = $this->state->data($telegramId);
+        $data                = $this->state->data($telegramId);
         $data['description'] = $text;
 
         $this->state->set($telegramId, 'txn.confirm', $data);
@@ -228,7 +218,6 @@ class TransactionHandler
     private function stepNoteSkip(int|string $telegramId, int|string $chatId, int $messageId): void
     {
         $data = $this->state->data($telegramId);
-
         $this->state->set($telegramId, 'txn.confirm', $data);
 
         Telegram::editMessageText([
@@ -250,15 +239,12 @@ class TransactionHandler
         ]);
     }
 
-    // ── Confirm / Cancel ────────────────────────────────────────────────────
-
     private function doConfirm(int|string $telegramId, int|string $chatId, int $messageId): void
     {
         $data = $this->state->data($telegramId);
         $user = User::where('telegram_id', $telegramId)->firstOrFail();
 
-        $transaction = $this->transactionService->createTransaction($user, $data);
-
+        $this->transactionService->createTransaction($user, $data);
         $this->state->clear($telegramId);
 
         $typeEmoji = match ($data['type']) {
@@ -270,7 +256,7 @@ class TransactionHandler
         Telegram::editMessageText([
             'chat_id'    => $chatId,
             'message_id' => $messageId,
-            'text'       => "{$typeEmoji} Transaction saved!\n\n" . $this->summaryText($data),
+            'text'       => "{$typeEmoji} " . __('bot.ai_saved') . "\n\n" . $this->summaryText($data),
             'parse_mode' => 'Markdown',
         ]);
     }
@@ -282,36 +268,31 @@ class TransactionHandler
         Telegram::editMessageText([
             'chat_id'    => $chatId,
             'message_id' => $messageId,
-            'text'       => "❌ Transaction cancelled.",
+            'text'       => __('bot.cancelled'),
         ]);
     }
-
-    // ── Helpers ─────────────────────────────────────────────────────────────
 
     private function summaryText(array $data): string
     {
         $typeLabel = match ($data['type']) {
-            'income'   => '💰 Income',
-            'expense'  => '💸 Expense',
+            'income'   => '💰 ' . __('bot.report_income'),
+            'expense'  => '💸 ' . __('bot.report_expenses'),
             'transfer' => '🔄 Transfer',
         };
 
-        $lines = [
-            "📝 *Transaction Summary*\n",
-            "Type: {$typeLabel}",
-        ];
+        $lines   = ["📝 *" . __('bot.txn_ask_type') . "*\n", "Type: {$typeLabel}"];
 
         if ($data['type'] === 'transfer') {
             $lines[] = "From: {$data['account_name']}";
             $lines[] = "To: " . ($data['to_account_name'] ?? '—');
         } else {
-            $lines[] = "Account: {$data['account_name']}";
-            $lines[] = "Category: " . ($data['category_name'] ?? '—');
+            $lines[] = __('bot.account') . ": {$data['account_name']}";
+            $lines[] = __('bot.category_tap_to_edit') . ": " . ($data['category_name'] ?? '—');
         }
 
         $currency = $data['currency'] ?? '';
         $amount   = isset($data['amount']) ? number_format($data['amount'], 2) : '—';
-        $lines[]  = "Amount: {$currency} {$amount}";
+        $lines[]  = __('bot.report_income') . " / Amount: {$currency} {$amount}";
 
         if (!empty($data['description'])) {
             $lines[] = "Note: {$data['description']}";
@@ -323,14 +304,12 @@ class TransactionHandler
     private function ownedAccount(int|string $telegramId, int $accountId): ?Account
     {
         $user = User::where('telegram_id', $telegramId)->first();
-
         return $user?->accounts()->find($accountId);
     }
 
     private function ownedCategory(int|string $telegramId, int $categoryId): ?Category
     {
         $user = User::where('telegram_id', $telegramId)->first();
-
         return $user?->categories()->find($categoryId);
     }
 }
