@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button, Cell, List, Modal, Section, Select, Spinner, Text } from '@telegram-apps/telegram-ui';
 import { api } from '../api/client';
+import { useLang } from '../LangContext';
 import type { Account, Category, Transaction } from '../types';
 
 function fmt(amount: number, currency: string) {
@@ -11,6 +12,7 @@ const SIGN = { income: '+', expense: '-', transfer: '⇄' } as const;
 const COLOR = { income: '#34c759', expense: '#ff3b30', transfer: '#007aff' } as const;
 
 export function Transactions() {
+  const { t } = useLang();
   const [items, setItems]       = useState<Transaction[]>([]);
   const [total, setTotal]       = useState(0);
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -42,7 +44,7 @@ export function Transactions() {
 
   const handleDelete = (id: number) => {
     api.deleteTransaction(id).then(() =>
-      setItems((prev) => prev.filter((t) => t.id !== id))
+      setItems((prev) => prev.filter((tx) => tx.id !== id))
     );
   };
 
@@ -53,51 +55,51 @@ export function Transactions() {
           <Cell>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
               <Select value={filterType} onChange={(e) => setFilterType(e.target.value)} style={{ flex: 1 }}>
-                <option value="">All types</option>
-                <option value="income">Income</option>
-                <option value="expense">Expense</option>
-                <option value="transfer">Transfer</option>
+                <option value="">{t('all_types')}</option>
+                <option value="income">{t('income')}</option>
+                <option value="expense">{t('expense')}</option>
+                <option value="transfer">{t('transfer')}</option>
               </Select>
-              <Button size="s" onClick={() => setAddOpen(true)}>+ Add</Button>
+              <Button size="s" onClick={() => setAddOpen(true)}>{t('add')}</Button>
             </div>
           </Cell>
         </Section>
 
         {loading && <div style={{ display: 'flex', justifyContent: 'center', padding: 20 }}><Spinner size="m" /></div>}
 
-        <Section header={`Transactions (${total})`}>
-          {items.map((t) => (
+        <Section header={`${t('nav_transactions')} (${total})`}>
+          {items.map((tx) => (
             <Cell
-              key={t.id}
-              before={<span style={{ fontSize: 22 }}>{t.category?.icon ?? '📦'}</span>}
-              subtitle={`${t.account?.name ?? ''} · ${new Date(t.occurred_at).toLocaleDateString()}`}
+              key={tx.id}
+              before={<span style={{ fontSize: 22 }}>{tx.category?.icon ?? '📦'}</span>}
+              subtitle={`${tx.account?.name ?? ''} · ${new Date(tx.occurred_at).toLocaleDateString()}`}
               after={
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Text style={{ color: COLOR[t.type], fontWeight: 600 }}>
-                    {SIGN[t.type]}{fmt(t.amount, t.currency)}
+                  <Text style={{ color: COLOR[tx.type], fontWeight: 600 }}>
+                    {SIGN[tx.type]}{fmt(tx.amount, tx.currency)}
                   </Text>
                   <span
                     style={{ cursor: 'pointer', color: '#ff3b30', fontSize: 18 }}
-                    onClick={() => handleDelete(t.id)}
+                    onClick={() => handleDelete(tx.id)}
                   >×</span>
                 </div>
               }
             >
-              {t.merchant || t.description || t.category?.name || t.type}
+              {tx.merchant || tx.description || tx.category?.name || tx.type}
             </Cell>
           ))}
         </Section>
 
         {offset.current < total && (
           <Section>
-            <Cell onClick={() => load()}>
-              <Button mode="outline" stretched onClick={() => load()}>Load more</Button>
+            <Cell>
+              <Button mode="outline" stretched onClick={() => load()}>{t('load_more')}</Button>
             </Cell>
           </Section>
         )}
       </List>
 
-      <Modal open={addOpen} onOpenChange={setAddOpen} header={<Modal.Header>Add Transaction</Modal.Header>}>
+      <Modal open={addOpen} onOpenChange={setAddOpen} header={<Modal.Header>{t('add_transaction')}</Modal.Header>}>
         <AddForm
           accounts={accounts}
           categories={categories}
@@ -117,19 +119,20 @@ interface AddFormProps {
 }
 
 function AddForm({ accounts, categories, onSave, onCancel }: AddFormProps) {
-  const [type, setType]         = useState<'income' | 'expense'>('expense');
-  const [amount, setAmount]     = useState('');
+  const { t } = useLang();
+  const [type, setType]           = useState<'income' | 'expense'>('expense');
+  const [amount, setAmount]       = useState('');
   const [accountId, setAccountId] = useState(accounts[0]?.id?.toString() ?? '');
   const [categoryId, setCategoryId] = useState('');
-  const [description, setDesc]  = useState('');
-  const [saving, setSaving]     = useState(false);
-  const [error, setError]       = useState('');
+  const [description, setDesc]    = useState('');
+  const [saving, setSaving]       = useState(false);
+  const [error, setError]         = useState('');
 
   const filteredCats = categories.filter((c) => c.type === type);
   const account      = accounts.find((a) => a.id === Number(accountId));
 
   const submit = () => {
-    if (!amount || !accountId) { setError('Amount and account are required'); return; }
+    if (!amount || !accountId) { setError(t('amount_required')); return; }
     setSaving(true);
     api.createTransaction({
       account_id:  Number(accountId),
@@ -155,15 +158,15 @@ function AddForm({ accounts, categories, onSave, onCancel }: AddFormProps) {
       {error && <p style={{ color: '#ff3b30', marginBottom: 8 }}>{error}</p>}
 
       <div style={{ marginBottom: 12 }}>
-        <label style={labelStyle}>Type</label>
+        <label style={labelStyle}>{t('type')}</label>
         <Select value={type} onChange={(e) => setType(e.target.value as 'income' | 'expense')} style={inputStyle}>
-          <option value="expense">Expense</option>
-          <option value="income">Income</option>
+          <option value="expense">{t('expense')}</option>
+          <option value="income">{t('income')}</option>
         </Select>
       </div>
 
       <div style={{ marginBottom: 12 }}>
-        <label style={labelStyle}>Amount</label>
+        <label style={labelStyle}>{t('amount')}</label>
         <input
           type="number" min="0.01" step="0.01" placeholder="0.00"
           value={amount} onChange={(e) => setAmount(e.target.value)}
@@ -172,33 +175,33 @@ function AddForm({ accounts, categories, onSave, onCancel }: AddFormProps) {
       </div>
 
       <div style={{ marginBottom: 12 }}>
-        <label style={labelStyle}>Account</label>
+        <label style={labelStyle}>{t('account')}</label>
         <Select value={accountId} onChange={(e) => setAccountId(e.target.value)} style={inputStyle}>
           {accounts.map((a) => <option key={a.id} value={a.id}>{a.name} ({a.currency})</option>)}
         </Select>
       </div>
 
       <div style={{ marginBottom: 12 }}>
-        <label style={labelStyle}>Category</label>
+        <label style={labelStyle}>{t('category')}</label>
         <Select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} style={inputStyle}>
-          <option value="">Uncategorized</option>
+          <option value="">{t('uncategorized')}</option>
           {filteredCats.map((c) => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
         </Select>
       </div>
 
       <div style={{ marginBottom: 20 }}>
-        <label style={labelStyle}>Description</label>
+        <label style={labelStyle}>{t('description')}</label>
         <input
-          type="text" placeholder="Optional note"
+          type="text" placeholder={t('optional_note')}
           value={description} onChange={(e) => setDesc(e.target.value)}
           style={inputStyle}
         />
       </div>
 
       <div style={{ display: 'flex', gap: 8 }}>
-        <Button mode="outline" stretched onClick={onCancel}>Cancel</Button>
+        <Button mode="outline" stretched onClick={onCancel}>{t('cancel')}</Button>
         <Button stretched onClick={submit} disabled={saving}>
-          {saving ? <Spinner size="s" /> : 'Save'}
+          {saving ? <Spinner size="s" /> : t('save')}
         </Button>
       </div>
     </div>

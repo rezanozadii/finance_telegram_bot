@@ -1,4 +1,5 @@
 import { Tabbar } from '@telegram-apps/telegram-ui';
+import { useLang } from '../LangContext';
 
 export type Tab = 'dashboard' | 'transactions' | 'report' | 'friends';
 
@@ -7,14 +8,16 @@ interface Props {
   onChange: (tab: Tab) => void;
 }
 
-const TABS: { id: Tab; icon: string; label: string }[] = [
-  { id: 'dashboard',    icon: '🏠', label: 'Home' },
-  { id: 'transactions', icon: '💳', label: 'Transactions' },
-  { id: 'report',       icon: '📊', label: 'Report' },
-  { id: 'friends',      icon: '👥', label: 'Friends' },
-];
-
 export function BottomNav({ active, onChange }: Props) {
+  const { t } = useLang();
+
+  const TABS: { id: Tab; icon: string; label: string }[] = [
+    { id: 'dashboard',    icon: '🏠', label: t('nav_home') },
+    { id: 'transactions', icon: '💳', label: t('nav_transactions') },
+    { id: 'report',       icon: '📊', label: t('nav_report') },
+    { id: 'friends',      icon: '👥', label: t('nav_friends') },
+  ];
+
   return (
     <Tabbar>
       {TABS.map((tab) => (

@@ -71,4 +71,5 @@ export interface Me {
   default_currency: string;
   account_count: number;
   total_balance: number;
+  language: 'en' | 'fa';
 }

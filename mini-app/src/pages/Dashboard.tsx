@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Cell, List, Section, Spinner, Headline, Text } from '@telegram-apps/telegram-ui';
 import { api } from '../api/client';
+import { useLang } from '../LangContext';
 import type { Account, Me, Transaction } from '../types';
 
 function fmt(amount: number, currency: string) {
@@ -16,6 +17,7 @@ function txnColor(type: Transaction['type']): string {
 }
 
 export function Dashboard() {
+  const { t } = useLang();
   const [me, setMe] = useState<Me | null>(null);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [recent, setRecent] = useState<Transaction[]>([]);
@@ -42,11 +44,10 @@ export function Dashboard() {
 
   return (
     <List>
-      {/* Balance card */}
       <Section>
         <Cell
           before={<span style={{ fontSize: 32 }}>💰</span>}
-          subtitle={`${me?.account_count ?? 0} account(s)`}
+          subtitle={`${me?.account_count ?? 0} ${t('accounts')}`}
         >
           <Headline weight="2">
             {fmt(me?.total_balance ?? 0, me?.default_currency ?? 'USD')}
@@ -54,9 +55,8 @@ export function Dashboard() {
         </Cell>
       </Section>
 
-      {/* Accounts */}
       {accounts.length > 0 && (
-        <Section header="Accounts">
+        <Section header={t('accounts')}>
           {accounts.map((a) => (
             <Cell
               key={a.id}
@@ -70,23 +70,22 @@ export function Dashboard() {
         </Section>
       )}
 
-      {/* Recent transactions */}
-      <Section header="Recent transactions">
+      <Section header={t('recent_transactions')}>
         {recent.length === 0 ? (
-          <Cell>No transactions yet</Cell>
+          <Cell>{t('no_transactions')}</Cell>
         ) : (
-          recent.map((t) => (
+          recent.map((tx) => (
             <Cell
-              key={t.id}
-              before={<span style={{ fontSize: 22 }}>{t.category?.icon ?? txnEmoji(t.type)}</span>}
-              subtitle={t.category?.name ?? t.merchant ?? '—'}
+              key={tx.id}
+              before={<span style={{ fontSize: 22 }}>{tx.category?.icon ?? txnEmoji(tx.type)}</span>}
+              subtitle={tx.category?.name ?? tx.merchant ?? '—'}
               after={
-                <Text style={{ color: txnColor(t.type), fontWeight: 600 }}>
-                  {txnSign(t.type)}{fmt(t.amount, t.currency)}
+                <Text style={{ color: txnColor(tx.type), fontWeight: 600 }}>
+                  {txnSign(tx.type)}{fmt(tx.amount, tx.currency)}
                 </Text>
               }
             >
-              {t.merchant || t.description || t.account?.name || t.type}
+              {tx.merchant || tx.description || tx.account?.name || tx.type}
             </Cell>
           ))
         )}

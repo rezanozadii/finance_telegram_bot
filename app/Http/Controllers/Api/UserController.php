@@ -22,6 +22,7 @@ class UserController extends Controller
             'default_currency' => $user->default_currency,
             'account_count'    => $accounts->count(),
             'total_balance'    => $accountService->totalBalance($user, $user->default_currency ?? 'USD'),
+            'language'         => $user->language ?? 'en',
         ]);
     }
 }

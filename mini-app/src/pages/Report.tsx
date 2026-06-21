@@ -1,26 +1,28 @@
 import { useEffect, useState } from 'react';
 import { Button, Cell, List, Section, Spinner, Text } from '@telegram-apps/telegram-ui';
 import { api } from '../api/client';
+import { useLang } from '../LangContext';
 import type { Report as ReportData } from '../types';
 
 type Period = 'month' | 'last_month' | 'quarter' | 'year';
-
-const PERIODS: { id: Period; label: string }[] = [
-  { id: 'month',      label: 'Month' },
-  { id: 'last_month', label: 'Last Month' },
-  { id: 'quarter',    label: 'Quarter' },
-  { id: 'year',       label: 'Year' },
-];
 
 function fmt(n: number) {
   return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 export function Report() {
+  const { t, lang } = useLang();
   const [period, setPeriod]   = useState<Period>('month');
   const [data, setData]       = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState('');
+
+  const PERIODS: { id: Period; labelKey: 'period_month' | 'period_last_month' | 'period_quarter' | 'period_year' }[] = [
+    { id: 'month',      labelKey: 'period_month' },
+    { id: 'last_month', labelKey: 'period_last_month' },
+    { id: 'quarter',    labelKey: 'period_quarter' },
+    { id: 'year',       labelKey: 'period_year' },
+  ];
 
   useEffect(() => {
     setLoading(true);
@@ -29,11 +31,10 @@ export function Report() {
       .then(setData)
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [period]);
+  }, [period, lang]);
 
   return (
     <List>
-      {/* Period selector */}
       <Section>
         <Cell>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
@@ -44,7 +45,7 @@ export function Report() {
                 mode={period === p.id ? 'filled' : 'outline'}
                 onClick={() => setPeriod(p.id)}
               >
-                {p.label}
+                {t(p.labelKey)}
               </Button>
             ))}
           </div>
@@ -61,19 +62,18 @@ export function Report() {
 
       {data && !loading && (
         <>
-          {/* Summary */}
           <Section header={data.label}>
             <Cell
               before={<span style={{ fontSize: 22 }}>💰</span>}
               after={<Text style={{ color: '#34c759', fontWeight: 600 }}>{data.currency} {fmt(data.income)}</Text>}
             >
-              Income
+              {t('report_income')}
             </Cell>
             <Cell
               before={<span style={{ fontSize: 22 }}>💸</span>}
               after={<Text style={{ color: '#ff3b30', fontWeight: 600 }}>{data.currency} {fmt(data.expenses)}</Text>}
             >
-              Expenses
+              {t('report_expenses')}
             </Cell>
             <Cell
               before={<span style={{ fontSize: 22 }}>💵</span>}
@@ -83,13 +83,12 @@ export function Report() {
                 </Text>
               }
             >
-              Net
+              {t('report_net')}
             </Cell>
           </Section>
 
-          {/* Category breakdown */}
           {data.by_category.length > 0 && (
-            <Section header="Expenses by Category">
+            <Section header={t('expenses_by_category')}>
               {data.by_category.map((cat) => (
                 <Cell
                   key={cat.name}
@@ -105,11 +104,7 @@ export function Report() {
                         height: 4, borderRadius: 2, background: 'var(--tg-theme-hint-color, #ccc)',
                         width: '100%', overflow: 'hidden',
                       }}>
-                        <div style={{
-                          height: '100%', borderRadius: 2,
-                          width: `${cat.pct}%`,
-                          background: '#007aff',
-                        }} />
+                        <div style={{ height: '100%', borderRadius: 2, width: `${cat.pct}%`, background: '#007aff' }} />
                       </div>
                     </div>
                   }
@@ -120,21 +115,20 @@ export function Report() {
             </Section>
           )}
 
-          {/* vs previous period */}
           <Section header={`vs. ${data.prev_label}`}>
             <Cell
               before={<span style={{ fontSize: 22 }}>💰</span>}
               after={<Text>{data.income_change}</Text>}
-              subtitle={`was ${data.currency} ${fmt(data.prev_income)}`}
+              subtitle={`${data.currency} ${fmt(data.prev_income)}`}
             >
-              Income
+              {t('report_income')}
             </Cell>
             <Cell
               before={<span style={{ fontSize: 22 }}>💸</span>}
               after={<Text>{data.expense_change}</Text>}
-              subtitle={`was ${data.currency} ${fmt(data.prev_expenses)}`}
+              subtitle={`${data.currency} ${fmt(data.prev_expenses)}`}
             >
-              Expenses
+              {t('report_expenses')}
             </Cell>
           </Section>
         </>
