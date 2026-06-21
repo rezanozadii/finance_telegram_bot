@@ -85,20 +85,19 @@ class ReportHandler
         $net = $d['net'];
 
         $lines = ["📊 *{$label}*\n"];
-        $lines[] = "💰 Income     {$currency} " . $fmt($d['income']);
-        $lines[] = "💸 Expenses   {$currency} " . $fmt($d['expenses']);
-        $lines[] = "💵 Net        " . ($net >= 0 ? '+' : '') . $fmt($net);
-        $lines[] = "({$d['count']} transactions)";
+        $lines[] = "💰 " . __('bot.report_income')   . "     {$currency} " . $fmt($d['income']);
+        $lines[] = "💸 " . __('bot.report_expenses')  . "   {$currency} " . $fmt($d['expenses']);
+        $lines[] = "💵 " . __('bot.report_net')       . "        " . ($net >= 0 ? '+' : '') . $fmt($net);
+        $lines[] = __('bot.report_transactions', ['count' => $d['count']]);
 
         if (!empty($d['other_currencies'])) {
-            $others    = implode(', ', $d['other_currencies']);
-            $lines[]   = "_Note: report shows {$currency} only. Other currencies: {$others}_";
+            $others  = implode(', ', $d['other_currencies']);
+            $lines[] = __('bot.report_other_currencies', ['currency' => $currency, 'others' => $others]);
         }
 
-        // Category breakdown
         if (!empty($d['by_category'])) {
             $lines[] = "\n─────────────────────";
-            $lines[] = "*Expenses by Category*\n";
+            $lines[] = "*" . __('bot.report_by_category') . "*\n";
 
             foreach ($d['by_category'] as $cat) {
                 $icon  = $cat['icon'] ?? '📦';
@@ -112,7 +111,7 @@ class ReportHandler
 
         // Comparison to previous period
         $lines[] = "\n─────────────────────";
-        $lines[] = "*vs. {$prevLabel}*\n";
+        $lines[] = "*" . __('bot.report_vs', ['period' => $prevLabel]) . "*\n";
 
         $incomeChange  = $this->reportService->formatChange($d['income'], $p['income']);
         $expenseChange = $this->reportService->formatChange($d['expenses'], $p['expenses']);

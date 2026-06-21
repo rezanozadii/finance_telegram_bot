@@ -17,14 +17,14 @@ class TransactionsCommand extends Command
         $user = User::where('telegram_id', $from->getId())->first();
 
         if (!$user) {
-            $this->replyWithMessage(['text' => 'Please send /start first to register.']);
+            $this->replyWithMessage(['text' => __('bot.please_start_first')]);
             return;
         }
 
         $transactions = app(TransactionService::class)->listRecent($user, 10);
 
         if ($transactions->isEmpty()) {
-            $this->replyWithMessage(['text' => 'No transactions yet. Use /add to log one.']);
+            $this->replyWithMessage(['text' => __('bot.txn_none')]);
             return;
         }
 

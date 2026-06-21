@@ -1,0 +1,133 @@
+<?php
+
+return [
+
+    // ── General ──────────────────────────────────────────────────────────────
+    'please_start_first'   => 'لطفاً ابتدا /start را ارسال کنید تا ثبت‌نام شوید.',
+    'cancelled'            => '❌ لغو شد.',
+    'enter_valid_number'   => 'لطفاً یک عدد معتبر وارد کنید (مثلاً ۱۰۰ یا ۱۵۰۰.۵۰).',
+    'enter_positive_number'=> 'لطفاً یک عدد مثبت وارد کنید.',
+
+    // ── Start ────────────────────────────────────────────────────────────────
+    'welcome_new'          => "👋 خوش آمدید، :name!\n\nمن دستیار مدیریت مالی شخصی شما هستم. بیایید با ساختن اولین حساب شروع کنیم.",
+    'welcome_back'         => "👋 خوش برگشتید، :name!\n\nشما :count حساب دارید. برای مدیریت از /accounts استفاده کنید یا یک تراکنش بفرستید، مثلاً:\n\n_«۵۰ هزار ناهار نقدی»_",
+
+    // ── Language ─────────────────────────────────────────────────────────────
+    'choose_language'      => '🌐 زبان خود را انتخاب کنید:',
+    'language_set'         => '✅ زبان به فارسی تغییر یافت.',
+
+    // ── Accounts ─────────────────────────────────────────────────────────────
+    'account_ask_name'     => "چه نامی برای این حساب می‌خواهید؟\n(مثلاً: نقدی، کارت اصلی، پس‌انداز)",
+    'account_enter_name'   => 'لطفاً یک نام برای حساب وارد کنید.',
+    'account_ask_type'     => "تأیید شد: *:name*\nنوع حساب چیست؟",
+    'account_ask_currency' => 'واحد پول چیست؟ (مثلاً: IRR، USD، EUR)',
+    'account_invalid_currency' => 'لطفاً یک کد ارز معتبر وارد کنید (مثلاً: USD).',
+    'account_ask_balance'  => 'موجودی فعلی چقدر است؟ (اگر تازه شروع می‌کنید ۰ وارد کنید)',
+    'account_created'      => "✅ حساب ایجاد شد!\n\n:icon *:name*\nارز: :currency\nموجودی: :balance",
+    'account_none'         => 'هنوز هیچ حساب فعالی ندارید.',
+    'account_list_title'   => 'حساب‌های شما',
+    'account_no_accounts_for_txn' => 'هنوز حسابی ندارید. ابتدا از /accounts یک حساب بسازید.',
+    'account_ask_rename'   => 'نام جدید *:name* را وارد کنید:',
+    'account_enter_name_short' => 'لطفاً یک نام وارد کنید.',
+    'account_renamed'      => '✅ نام *:old* به *:new* تغییر یافت',
+    'account_confirm_archive' => 'آیا *:name* را بایگانی کنیم؟ از همه نماها پنهان خواهد شد.',
+    'account_archived'     => '🗃 *:name* بایگانی شد.',
+
+    // ── Categories ───────────────────────────────────────────────────────────
+    'category_ask_type'    => "ایجاد دسته‌بندی جدید.\n\nآیا این دسته‌بندی برای درآمد است یا هزینه؟",
+    'category_ask_name'    => "در حال ایجاد دسته‌بندی *:type*.\n\nچه نامی داشته باشد؟",
+    'category_ask_icon'    => "تأیید شد: *:name*\n\nآیا می‌خواهید یک ایموجی اضافه کنید؟ (مثلاً 🏋️) یا رد کنید.",
+    'category_ask_parent'  => 'آیا این باید زیردسته‌ی یک دسته‌بندی موجود باشد؟',
+    'category_created'     => '✅ دسته‌بندی *:icon:name* ایجاد شد!',
+    'category_tap_to_edit' => 'برای ویرایش روی یک دسته‌بندی ضربه بزنید:',
+    'category_ask_rename'  => 'نام جدید *:name* را وارد کنید:',
+    'category_renamed'     => '✅ نام به *:name* تغییر یافت',
+    'category_ask_icon_edit' => 'ایموجی جدید برای *:name* ارسال کنید:',
+    'category_icon_updated'=> '✅ آیکون به :icon تغییر یافت',
+    'category_confirm_delete' => 'آیا *:name* را حذف کنیم؟ این عمل قابل بازگشت نیست.',
+    'category_deleted'     => '🗑 دسته‌بندی حذف شد.',
+    'category_has_transactions' => '❌ امکان حذف وجود ندارد: این دسته‌بندی تراکنش‌های موجود دارد.',
+    'category_detail'      => '*:icon:name* (:type)',
+
+    // ── Transactions ─────────────────────────────────────────────────────────
+    'txn_ask_type'         => 'تراکنش جدید. چه نوعی است؟',
+    'txn_ask_amount'       => 'مبلغ چقدر است؟ (:currency)',
+    'txn_ask_transfer_amount' => 'مبلغ انتقال چقدر است؟',
+    'txn_ask_category'     => 'کدام دسته‌بندی؟',
+    'txn_ask_to_account'   => 'انتقال *به* کدام حساب؟',
+    'txn_ask_note'         => 'یادداشتی اضافه کنید؟ (اختیاری)',
+    'txn_created'          => "✅ تراکنش ثبت شد!\n\n:icon :type\n:currency :amount\nحساب: :account\nدسته‌بندی: :category",
+    'txn_deleted'          => '🗑 تراکنش حذف شد.',
+    'txn_none'             => 'هنوز تراکنشی ندارید. از /add استفاده کنید.',
+    'txn_recent_title'     => 'تراکنش‌های اخیر',
+    'txn_list_empty'       => 'تراکنشی پیدا نشد.',
+
+    // ── AI Parsing ───────────────────────────────────────────────────────────
+    'ai_not_configured'    => 'هوش مصنوعی پیکربندی نشده است. برای ورود دستی از /add استفاده کنید.',
+    'ai_choose_account'    => 'حساب صحیح را انتخاب کنید:',
+    'ai_choose_category'   => 'دسته‌بندی صحیح را انتخاب کنید:',
+    'ai_parsing'           => '🤖 در حال تجزیه‌ی تراکنش...',
+    'ai_failed'            => '❌ نتوانستم آن را تجزیه کنم. برای ورود دستی از /add استفاده کنید.',
+    'ai_confirm'           => "🤖 *تراکنش تجزیه‌شده توسط هوش مصنوعی*\n\n:summary\n\nآیا درست است؟",
+    'ai_saved'             => '✅ تراکنش ذخیره شد!',
+    'ai_cancelled'         => '❌ تراکنش لغو شد.',
+
+    // ── Recurring ────────────────────────────────────────────────────────────
+    'rec_ask_name'         => "تنظیم تراکنش تکرارشونده.\n\nنام آن چیست؟ (مثلاً: اجاره، نتفلیکس، حقوق)",
+    'rec_ask_type'         => 'آیا *:name* درآمد است یا هزینه؟',
+    'rec_ask_account'      => 'این هزینه از کدام حساب کسر شود؟',
+    'rec_ask_category'     => 'کدام دسته‌بندی؟',
+    'rec_ask_amount'       => 'مبلغ چقدر است؟',
+    'rec_ask_frequency'    => 'هر چند وقت یک‌بار تکرار می‌شود؟',
+    'rec_ask_start_date'   => "اولین تاریخ سررسید کی است؟\nیک تاریخ وارد کنید (YYYY-MM-DD) یا بنویسید *امروز*.",
+    'rec_invalid_date'     => '❌ تاریخ نامعتبر است. لطفاً از فرمت YYYY-MM-DD استفاده کنید یا *امروز* بنویسید.',
+    'rec_ask_reminder'     => 'آیا می‌خواهید قبل از سررسید یادآوری دریافت کنید؟',
+    'rec_created'          => "✅ الگوی تکرارشونده ایجاد شد!\n\n*:name*\n:currency :amount · :frequency",
+    'rec_none'             => 'هنوز الگوی تکرارشونده‌ای ندارید.',
+    'rec_list_title'       => 'الگوهای تکرارشونده',
+    'rec_ask_confirm_amount' => 'مبلغ واقعی *:name* را وارد کنید (پیش‌فرض: :currency :amount):',
+    'rec_confirmed'        => '✅ *:name* تأیید شد و تراکنش ثبت گردید!',
+    'rec_skipped'          => '⏭ رد شد.',
+    'rec_confirm_deactivate' => 'آیا *:name* را غیرفعال کنیم؟ دیگر هیچ یادآوری یا اعلان سررسیدی دریافت نخواهید کرد.',
+    'rec_deactivated'      => '🔕 *:name* غیرفعال شد.',
+    'rec_reminder_msg'     => '🔔 یادآوری: *:name* (:currency :amount) در تاریخ :date سررسید دارد.',
+    'rec_due_msg'          => '📅 *:name* (:currency :amount) امروز سررسید است! تأیید یا رد؟',
+
+    // ── Friends ───────────────────────────────────────────────────────────────
+    'friend_no_friends'    => "👥 *دوستان*\n\nهنوز هیچ دوستی در ربات ندارید.\nنام کاربری آن‌ها را با /addfriend ارسال کنید یا دکمه افزودن دوست را بزنید.",
+    'friend_list_title'    => '👥 *دوستان* (:count نفر)',
+    'friend_ask_username'  => 'نام کاربری تلگرام شخص مورد نظر را وارد کنید (مثلاً @ali):',
+    'friend_not_found'     => '❌ کاربر *:username* هنوز این ربات را شروع نکرده است.',
+    'friend_self'          => 'نمی‌توانید خودتان را به‌عنوان دوست اضافه کنید.',
+    'friend_already'       => 'شما قبلاً دوست هستید یا یک درخواست در انتظار وجود دارد.',
+    'friend_request_sent'  => '✅ درخواست دوستی به *:name* ارسال شد!',
+    'friend_request_received' => '🤝 *:name* می‌خواهد در ربات مالی با شما دوست شود!',
+    'friend_accepted'      => '✅ شما حالا با *:name* دوست هستید!',
+    'friend_accept_notify' => '✅ *:name* درخواست دوستی شما را پذیرفت!',
+    'friend_declined'      => '❌ درخواست دوستی از *:name* رد شد.',
+    'friend_settled'       => '✅ تسویه‌شده',
+    'friend_settle_done'   => '✅ با *:name* تسویه شد! (:count هزینه‌ی مشترک تسویه‌شده)',
+    'friend_settle_notify' => '✅ *:name* همه هزینه‌های مشترک بین شما را تسویه‌شده علامت زد.',
+    'friend_already_settled'=> 'شما و *:name* قبلاً تسویه‌حساب کرده‌اید! ✅',
+    'friend_expense_who_paid' => "ثبت هزینه‌ی مشترک با *:name*.\n\nچه کسی پرداخت کرد؟",
+    'friend_expense_ask_amount' => 'مبلغ چقدر است؟',
+    'friend_expense_ask_note' => 'برای چه بود؟ (توضیحات اختیاری)',
+    'friend_expense_logged'=> "✅ هزینه‌ی مشترک ثبت شد!\n\n:summary",
+    'friend_no_pending'    => 'درخواست دوستی در انتظاری وجود ندارد.',
+    'friend_pending_title' => '🔔 *درخواست‌های در انتظار* (:count)',
+    'friend_settle_confirm'=> "با *:name* تسویه‌حساب شود؟\n\nمانده فعلی: :balance\n\nهمه هزینه‌های مشترک باز تسویه‌شده خواهند شد.",
+    'friend_they_owe'      => ':name باید :currency :amount بپردازد',
+    'friend_you_owe'       => 'شما باید :currency :amount بپردازید',
+    'balance_no_friends'   => 'هنوز دوستی ندارید. از /addfriend استفاده کنید.',
+    'balance_not_friend'   => 'شما با @:username دوست نیستید.',
+
+    // ── Report ────────────────────────────────────────────────────────────────
+    'report_income'        => 'درآمد',
+    'report_expenses'      => 'هزینه‌ها',
+    'report_net'           => 'خالص',
+    'report_by_category'   => 'هزینه‌ها بر اساس دسته‌بندی',
+    'report_vs'            => 'در مقایسه با :period',
+    'report_transactions'  => '(:count تراکنش)',
+    'report_other_currencies' => '_توجه: گزارش فقط :currency را نشان می‌دهد. سایر ارزها: :others_',
+
+];

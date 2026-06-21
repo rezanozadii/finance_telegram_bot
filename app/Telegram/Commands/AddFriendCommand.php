@@ -17,7 +17,7 @@ class AddFriendCommand extends Command
         $user = User::where('telegram_id', $from->getId())->first();
 
         if (!$user) {
-            $this->replyWithMessage(['text' => 'Please send /start first to register.']);
+            $this->replyWithMessage(['text' => __('bot.please_start_first')]);
             return;
         }
 

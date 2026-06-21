@@ -18,8 +18,6 @@ class AccountHandler
         private ConversationStateService $state,
     ) {}
 
-    // ── Message (text input) steps ──────────────────────────────────────────
-
     public function handleMessage(Message $message, string $step): void
     {
         $telegramId = $message->getFrom()->getId();
@@ -35,8 +33,6 @@ class AccountHandler
         };
     }
 
-    // ── Callback query steps ────────────────────────────────────────────────
-
     public function handleCallback(CallbackQuery $query, string $action): void
     {
         $telegramId = $query->getFrom()->getId();
@@ -46,33 +42,27 @@ class AccountHandler
         Telegram::answerCallbackQuery(['callback_query_id' => $query->getId()]);
 
         match (true) {
-            $action === 'account:add'                      => $this->startCreation($telegramId, $chatId),
-            $action === 'account:list'                     => $this->showList($telegramId, $chatId, $messageId),
-            str_starts_with($action, 'account_type:')     => $this->stepType($telegramId, $chatId, substr($action, 13)),
-            str_starts_with($action, 'account_edit:')     => $this->showActions($telegramId, $chatId, $messageId, (int) substr($action, 13)),
-            str_starts_with($action, 'account_rename:')   => $this->beginRename($telegramId, $chatId, (int) substr($action, 15)),
-            str_starts_with($action, 'account_archive:')  => $this->confirmArchive($telegramId, $chatId, $messageId, (int) substr($action, 16)),
+            $action === 'account:add'                           => $this->startCreation($telegramId, $chatId),
+            $action === 'account:list'                          => $this->showList($telegramId, $chatId, $messageId),
+            str_starts_with($action, 'account_type:')          => $this->stepType($telegramId, $chatId, substr($action, 13)),
+            str_starts_with($action, 'account_edit:')          => $this->showActions($telegramId, $chatId, $messageId, (int) substr($action, 13)),
+            str_starts_with($action, 'account_rename:')        => $this->beginRename($telegramId, $chatId, (int) substr($action, 15)),
+            str_starts_with($action, 'account_archive:')       => $this->confirmArchive($telegramId, $chatId, $messageId, (int) substr($action, 16)),
             str_starts_with($action, 'account_archive_confirm:') => $this->doArchive($telegramId, $chatId, $messageId, (int) substr($action, 24)),
             default => null,
         };
     }
 
-    // ── Creation flow ───────────────────────────────────────────────────────
-
     public function startCreation(int|string $telegramId, int|string $chatId): void
     {
         $this->state->set($telegramId, 'account.name');
-
-        Telegram::sendMessage([
-            'chat_id' => $chatId,
-            'text'    => "What would you like to name this account?\n(e.g. Cash, Main Card, Savings)",
-        ]);
+        Telegram::sendMessage(['chat_id' => $chatId, 'text' => __('bot.account_ask_name')]);
     }
 
     private function stepName(int|string $telegramId, int|string $chatId, string $text): void
     {
         if ($text === '') {
-            Telegram::sendMessage(['chat_id' => $chatId, 'text' => 'Please enter a name for the account.']);
+            Telegram::sendMessage(['chat_id' => $chatId, 'text' => __('bot.account_enter_name')]);
             return;
         }
 
@@ -80,7 +70,7 @@ class AccountHandler
 
         Telegram::sendMessage([
             'chat_id'      => $chatId,
-            'text'         => "Got it: *{$text}*\nWhat type of account is this?",
+            'text'         => __('bot.account_ask_type', ['name' => $text]),
             'parse_mode'   => 'Markdown',
             'reply_markup' => json_encode(AccountKeyboard::typeSelector()),
         ]);
@@ -92,11 +82,7 @@ class AccountHandler
             $this->state->data($telegramId),
             ['type' => $type]
         ));
-
-        Telegram::sendMessage([
-            'chat_id' => $chatId,
-            'text'    => "What currency? (e.g. USD, EUR, GBP)",
-        ]);
+        Telegram::sendMessage(['chat_id' => $chatId, 'text' => __('bot.account_ask_currency')]);
     }
 
     private function stepCurrency(int|string $telegramId, int|string $chatId, string $text): void
@@ -104,7 +90,7 @@ class AccountHandler
         $currency = strtoupper(trim($text));
 
         if (strlen($currency) < 2 || strlen($currency) > 10) {
-            Telegram::sendMessage(['chat_id' => $chatId, 'text' => 'Please enter a valid currency code (e.g. USD).']);
+            Telegram::sendMessage(['chat_id' => $chatId, 'text' => __('bot.account_invalid_currency')]);
             return;
         }
 
@@ -112,17 +98,13 @@ class AccountHandler
             $this->state->data($telegramId),
             ['currency' => $currency]
         ));
-
-        Telegram::sendMessage([
-            'chat_id' => $chatId,
-            'text'    => "What's the current balance? (Enter 0 if starting fresh)",
-        ]);
+        Telegram::sendMessage(['chat_id' => $chatId, 'text' => __('bot.account_ask_balance')]);
     }
 
     private function stepBalance(int|string $telegramId, int|string $chatId, string $text): void
     {
         if (!is_numeric($text)) {
-            Telegram::sendMessage(['chat_id' => $chatId, 'text' => 'Please enter a valid number (e.g. 100 or 1500.50).']);
+            Telegram::sendMessage(['chat_id' => $chatId, 'text' => __('bot.enter_valid_number')]);
             return;
         }
 
@@ -132,15 +114,17 @@ class AccountHandler
 
         $this->state->clear($telegramId);
 
-        $typeIcon = $this->typeIcon($account->type);
         Telegram::sendMessage([
             'chat_id'    => $chatId,
-            'text'       => "✅ Account created!\n\n{$typeIcon} *{$account->name}*\nCurrency: {$account->currency}\nBalance: " . number_format($account->current_balance, 2),
+            'text'       => __('bot.account_created', [
+                'icon'     => $this->typeIcon($account->type),
+                'name'     => $account->name,
+                'currency' => $account->currency,
+                'balance'  => number_format((float) $account->current_balance, 2),
+            ]),
             'parse_mode' => 'Markdown',
         ]);
     }
-
-    // ── Edit flow ───────────────────────────────────────────────────────────
 
     private function showList(int|string $telegramId, int|string $chatId, int $messageId): void
     {
@@ -151,7 +135,7 @@ class AccountHandler
             Telegram::editMessageText([
                 'chat_id'      => $chatId,
                 'message_id'   => $messageId,
-                'text'         => "You have no active accounts yet.",
+                'text'         => __('bot.account_none'),
                 'reply_markup' => json_encode(['inline_keyboard' => [[['text' => '➕ Add Account', 'callback_data' => 'account:add']]]]),
             ]);
             return;
@@ -173,11 +157,10 @@ class AccountHandler
             return;
         }
 
-        $typeIcon = $this->typeIcon($account->type);
         Telegram::editMessageText([
             'chat_id'      => $chatId,
             'message_id'   => $messageId,
-            'text'         => "{$typeIcon} *{$account->name}*\nBalance: {$account->currency} " . number_format($account->current_balance, 2),
+            'text'         => $this->typeIcon($account->type) . " *{$account->name}*\nBalance: {$account->currency} " . number_format((float) $account->current_balance, 2),
             'parse_mode'   => 'Markdown',
             'reply_markup' => json_encode(AccountKeyboard::accountActions($account)),
         ]);
@@ -193,8 +176,8 @@ class AccountHandler
         $this->state->set($telegramId, 'account.rename', ['account_id' => $accountId]);
 
         Telegram::sendMessage([
-            'chat_id' => $chatId,
-            'text'    => "Enter the new name for *{$account->name}*:",
+            'chat_id'    => $chatId,
+            'text'       => __('bot.account_ask_rename', ['name' => $account->name]),
             'parse_mode' => 'Markdown',
         ]);
     }
@@ -202,7 +185,7 @@ class AccountHandler
     private function stepRename(int|string $telegramId, int|string $chatId, string $text): void
     {
         if ($text === '') {
-            Telegram::sendMessage(['chat_id' => $chatId, 'text' => 'Please enter a name.']);
+            Telegram::sendMessage(['chat_id' => $chatId, 'text' => __('bot.account_enter_name_short')]);
             return;
         }
 
@@ -220,7 +203,7 @@ class AccountHandler
 
         Telegram::sendMessage([
             'chat_id'    => $chatId,
-            'text'       => "✅ Renamed *{$old}* → *{$text}*",
+            'text'       => __('bot.account_renamed', ['old' => $old, 'new' => $text]),
             'parse_mode' => 'Markdown',
         ]);
     }
@@ -235,7 +218,7 @@ class AccountHandler
         Telegram::editMessageText([
             'chat_id'      => $chatId,
             'message_id'   => $messageId,
-            'text'         => "Archive *{$account->name}*? It will be hidden from all views.",
+            'text'         => __('bot.account_confirm_archive', ['name' => $account->name]),
             'parse_mode'   => 'Markdown',
             'reply_markup' => json_encode(AccountKeyboard::confirmArchive($account)),
         ]);
@@ -254,17 +237,14 @@ class AccountHandler
         Telegram::editMessageText([
             'chat_id'    => $chatId,
             'message_id' => $messageId,
-            'text'       => "🗃 *{$name}* has been archived.",
+            'text'       => __('bot.account_archived', ['name' => $name]),
             'parse_mode' => 'Markdown',
         ]);
     }
 
-    // ── Helpers ─────────────────────────────────────────────────────────────
-
     private function ownedAccount(int|string $telegramId, int $accountId): ?Account
     {
         $user = User::where('telegram_id', $telegramId)->first();
-
         return $user?->accounts()->find($accountId);
     }
 
@@ -272,10 +252,10 @@ class AccountHandler
     {
         $lines = $accounts->map(function (Account $a) {
             $icon = $this->typeIcon($a->type);
-            return "{$icon} *{$a->name}* ({$a->currency}) — " . number_format($a->current_balance, 2);
+            return "{$icon} *{$a->name}* ({$a->currency}) — " . number_format((float) $a->current_balance, 2);
         })->join("\n");
 
-        return "Your Accounts\n\n{$lines}";
+        return __('bot.account_list_title') . "\n\n{$lines}";
     }
 
     private function typeIcon(string $type): string

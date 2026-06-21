@@ -47,6 +47,7 @@ return [
                 App\Telegram\Commands\AddFriendCommand::class,
                 App\Telegram\Commands\BalanceCommand::class,
                 App\Telegram\Commands\ReportCommand::class,
+                App\Telegram\Commands\LanguageCommand::class,
             ],
         ],
 

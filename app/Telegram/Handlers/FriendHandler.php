@@ -328,7 +328,7 @@ class FriendHandler
     private function stepExpenseAmount(int|string $telegramId, int|string $chatId, string $text): void
     {
         if (!is_numeric($text) || (float) $text <= 0) {
-            Telegram::sendMessage(['chat_id' => $chatId, 'text' => 'Please enter a positive number.']);
+            Telegram::sendMessage(['chat_id' => $chatId, 'text' => __('bot.enter_positive_number')]);
             return;
         }
 

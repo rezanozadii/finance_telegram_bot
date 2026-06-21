@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Model
 {
-    protected $fillable = ['telegram_id', 'username', 'display_name', 'default_currency'];
+    protected $fillable = ['telegram_id', 'username', 'display_name', 'default_currency', 'language'];
 
     public function accounts(): HasMany
     {
