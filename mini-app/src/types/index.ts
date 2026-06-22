@@ -73,3 +73,73 @@ export interface Me {
   total_balance: number;
   language: 'en' | 'fa';
 }
+
+export type AiPage = 'hub' | 'chat' | 'health' | 'goals' | 'budgets' | 'forecast' | 'subscriptions' | 'insights';
+
+export interface HealthScoreComponent {
+  label: string;
+  score: number;
+  weighted_score: number;
+  explanation: string;
+}
+
+export interface HealthScore {
+  total: number;
+  personality: string;
+  components: Record<string, HealthScoreComponent>;
+}
+
+export interface UserGoal {
+  id: number;
+  name: string;
+  target_amount: number;
+  current_amount: number;
+  currency: string;
+  deadline: string | null;
+  status: 'active' | 'completed' | 'paused';
+}
+
+export interface Budget {
+  id: number;
+  name: string;
+  amount: number;
+  spent_amount: number;
+  currency: string;
+  period: 'monthly' | 'weekly' | 'yearly';
+  pct_used: number;
+  status: 'safe' | 'warning' | 'critical' | 'exceeded';
+  category?: { id: number; name: string } | null;
+}
+
+export interface Forecast {
+  projected_monthly_expense: number;
+  projected_monthly_income: number;
+  projected_eom_balance: number;
+  savings_potential: number;
+  overspending_risk: boolean;
+  currency: string;
+  goal_forecasts: Array<{ name: string; months_remaining: number | null }>;
+}
+
+export interface Subscription {
+  merchant: string;
+  amount: number;
+  currency: string;
+  frequency: 'monthly' | 'yearly' | 'weekly';
+  monthly_cost: number;
+  yearly_cost: number;
+  last_payment_at: string | null;
+  next_predicted_at: string | null;
+}
+
+export interface AiInsight {
+  id: number;
+  type: string;
+  content: string;
+  insights_date: string;
+}
+
+export interface ChatMessage {
+  role: 'user' | 'ai';
+  content: string;
+}

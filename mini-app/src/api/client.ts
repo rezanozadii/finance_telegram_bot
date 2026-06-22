@@ -1,4 +1,4 @@
-import type { Account, Category, Friend, Me, Report, Transaction, TransactionList } from '../types';
+import type { Account, AiInsight, Budget, Category, Forecast, Friend, HealthScore, Me, Report, Subscription, Transaction, TransactionList, UserGoal } from '../types';
 
 let _initDataRaw = '';
 
@@ -72,4 +72,35 @@ export const api = {
     request<Report>(`/report?period=${period}${currency ? `&currency=${currency}` : ''}`),
 
   friends: () => request<Friend[]>('/friends'),
+
+  aiChat: (message: string, currency?: string) =>
+    request<{ response: string }>('/ai/chat', {
+      method: 'POST',
+      body: JSON.stringify({ message, currency }),
+    }),
+
+  healthScore: () => request<HealthScore>('/ai/health-score'),
+
+  aiInsights: () => request<AiInsight[]>('/ai/insights'),
+
+  aiSubscriptions: () => request<Subscription[]>('/ai/subscriptions'),
+
+  goals: () => request<UserGoal[]>('/goals'),
+
+  createGoal: (data: { name: string; target_amount: number; currency: string; deadline?: string }) =>
+    request<UserGoal>('/goals', { method: 'POST', body: JSON.stringify(data) }),
+
+  deleteGoal: (id: number) =>
+    request<{ success: boolean }>(`/goals/${id}`, { method: 'DELETE' }),
+
+  budgets: () => request<Budget[]>('/budgets'),
+
+  createBudget: (data: { name: string; amount: number; currency: string; period: string; category_id?: number }) =>
+    request<Budget>('/budgets', { method: 'POST', body: JSON.stringify(data) }),
+
+  deleteBudget: (id: number) =>
+    request<{ success: boolean }>(`/budgets/${id}`, { method: 'DELETE' }),
+
+  forecast: (currency?: string) =>
+    request<Forecast>(`/forecast${currency ? `?currency=${currency}` : ''}`),
 };
