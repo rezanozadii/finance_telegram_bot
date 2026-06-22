@@ -48,4 +48,29 @@ class User extends Model
     {
         return $this->hasMany(SharedExpense::class, 'to_user_id');
     }
+
+    public function aiMemory(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(AiUserMemory::class);
+    }
+
+    public function goals(): HasMany
+    {
+        return $this->hasMany(UserGoal::class);
+    }
+
+    public function budgets(): HasMany
+    {
+        return $this->hasMany(Budget::class);
+    }
+
+    public function aiInsights(): HasMany
+    {
+        return $this->hasMany(AiInsight::class);
+    }
+
+    public function detectedSubscriptions(): HasMany
+    {
+        return $this->hasMany(DetectedSubscription::class);
+    }
 }

@@ -17,6 +17,8 @@ class CallbackHandler
         private RecurringHandler $recurringHandler,
         private FriendHandler $friendHandler,
         private ReportHandler $reportHandler,
+        private GoalHandler $goalHandler,
+        private BudgetHandler $budgetHandler,
     ) {}
 
     private function handleLanguage(CallbackQuery $query, string $action): void
@@ -47,6 +49,8 @@ class CallbackHandler
         $action = $query->getData() ?? '';
 
         match (true) {
+            str_starts_with($action, 'goal')     => $this->goalHandler->handleCallback($query, $action),
+            str_starts_with($action, 'budget')   => $this->budgetHandler->handleCallback($query, $action),
             str_starts_with($action, 'account')  => $this->accountHandler->handleCallback($query, $action),
             str_starts_with($action, 'category') => $this->categoryHandler->handleCallback($query, $action),
             str_starts_with($action, 'ai_txn')   => $this->aiTransactionHandler->handleCallback($query, $action),

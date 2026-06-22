@@ -15,6 +15,9 @@ class MessageHandler
         private AiTransactionHandler $aiTransactionHandler,
         private RecurringHandler $recurringHandler,
         private FriendHandler $friendHandler,
+        private AiChatHandler $aiChatHandler,
+        private GoalHandler $goalHandler,
+        private BudgetHandler $budgetHandler,
     ) {}
 
     public function handle(Message $message): void
@@ -32,6 +35,9 @@ class MessageHandler
         }
 
         match (true) {
+            $step === 'ai_chat'                  => $this->aiChatHandler->handle($message),
+            str_starts_with($step, 'goal.')      => $this->goalHandler->handleMessage($message, $step),
+            str_starts_with($step, 'budget.')    => $this->budgetHandler->handleMessage($message, $step),
             str_starts_with($step, 'account.')   => $this->accountHandler->handleMessage($message, $step),
             str_starts_with($step, 'category.')  => $this->categoryHandler->handleMessage($message, $step),
             str_starts_with($step, 'txn.')       => $this->transactionHandler->handleMessage($message, $step),
