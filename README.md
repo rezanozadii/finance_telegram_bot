@@ -4,7 +4,7 @@
 
 A full-stack **AI-powered personal finance assistant** built as a Telegram bot + Mini App. Track income and expenses, manage accounts, split costs with friends, and get intelligent coaching from a built-in AI Financial Advisor — all inside Telegram.
 
-> **Latest:** v1.2.5 — Goals and Budgets pages fixed (black screen bug); security hardened with rate limiting per authenticated user and response security headers.
+> **Latest:** v1.2.7 — Goal/Budget button callbacks fixed; health score now correct for new accounts; 📖 Tutorial button added to the main menu.
 
 ---
 
@@ -14,7 +14,7 @@ A full-stack **AI-powered personal finance assistant** built as a Telegram bot +
 
 #### Main Menu (UI)
 Every user sees a complete UI from the moment they type `/start`:
-- **Persistent bottom keyboard** — 10 tap buttons always visible (no need to type commands)
+- **Persistent bottom keyboard** — 11 tap buttons always visible (no need to type commands)
 - **Full inline menu** — all 16 features in one message, one tap away
 
 ```
@@ -26,6 +26,7 @@ Every user sees a complete UI from the moment they type `/start`:
 ❤️ Health Score     |  💡 Daily Insights
 🏋️ Financial Coach |  🤖 AI Chat
 🔄 Subscriptions    |  🌐 Language
+        📖 Tutorial
 ```
 
 #### Bot Commands
@@ -371,6 +372,18 @@ All endpoints are under `/api/*` and require `Authorization: tma <initDataRaw>` 
 ---
 
 ## Changelog
+
+### v1.2.7
+- **Bot:** Fixed goal name button — tapping a goal name previously triggered `goal_complete` silently (the goal vanished from the list with no warning); now opens a detail view showing the progress bar and deadline, with explicit **✅ Mark Complete**, **🗑 Delete**, and **⬅️ Back** buttons
+- **Bot:** Fixed budget name button — every budget name sent the same `budget:list` callback (a no-op refresh, regardless of which budget was tapped); now sends `budget_view:{id}`, opening a detail view with spend progress, limit, period label, and a Delete button
+- **Bot:** Fixed health score for new accounts — `getMonthlyTrend()` previously generated 6 months of zero-filled data even for day-1 accounts, making consistency scores artificially low; months before the account creation date are now skipped entirely
+- **Bot:** Fixed emergency fund score returning 0 for new accounts — when there is no expense history yet the old code set `$monthsCovered = 0`; if the user has a liquid balance the fund now correctly reports full coverage (6 months)
+- **Bot:** Health score now includes an account age notice for accounts younger than 30 days: *"Your score improves as you log more transactions"*
+- **Bot:** Added **📖 Tutorial** button to the main keyboard (full-width row at the bottom, bilingual EN/FA) — explains every feature and how to use it
+
+### v1.2.6
+- **Bot:** Fixed Persian report period buttons — `report:home` callback now correctly dismisses the inline keyboard and returns to the main menu
+- **Bot:** Added 🏠 Home button to the report period navigation keyboard
 
 ### v1.2.5
 - **Mini App:** Fixed Goals page showing black/blank screen — `GoalController` was returning `{goals:[...]}` but the TypeScript client expected a plain `UserGoal[]` array; `goals.map()` on an object crashes silently → blank screen. All responses now return plain arrays.
