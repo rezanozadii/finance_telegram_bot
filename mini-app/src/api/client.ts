@@ -6,6 +6,16 @@ export function setInitDataRaw(raw: string): void {
   _initDataRaw = raw;
 }
 
+export function getInitDataRaw(): string {
+  return _initDataRaw;
+}
+
+export class ApiError extends Error {
+  constructor(message: string, public readonly status: number) {
+    super(message);
+  }
+}
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`/api${path}`, {
     ...options,
@@ -18,7 +28,14 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 
   if (!res.ok) {
     const body = await res.text().catch(() => '');
-    throw new Error(body || `HTTP ${res.status}`);
+    let message = `HTTP ${res.status}`;
+    try {
+      const json = JSON.parse(body);
+      message = json.error ?? json.message ?? message;
+    } catch {
+      if (body) message = body;
+    }
+    throw new ApiError(message, res.status);
   }
 
   return res.json() as Promise<T>;

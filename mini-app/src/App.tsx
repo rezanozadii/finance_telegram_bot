@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { AppRoot } from '@telegram-apps/telegram-ui';
+import { AppRoot, Spinner } from '@telegram-apps/telegram-ui';
 import { LangProvider, useLang } from './LangContext';
 import { BottomNav, type Tab } from './components/BottomNav';
 import { Dashboard } from './pages/Dashboard';
@@ -19,7 +19,7 @@ import { Categories } from './pages/Categories';
 import { Settings } from './pages/Settings';
 import { Habits } from './pages/Habits';
 import { WhatIf } from './pages/WhatIf';
-import { api } from './api/client';
+import { api, ApiError, getInitDataRaw } from './api/client';
 import type { AiPage, DashPage, Me } from './types';
 import type { Lang } from './i18n';
 
@@ -58,23 +58,149 @@ function detectInitialLang(): Lang {
   return 'en';
 }
 
+type AuthStatus = 'loading' | 'ok' | 'no_telegram' | 'not_registered' | 'auth_error';
+
+// Full-screen splash for auth problems — shown before the main layout
+function AuthScreen({ status, lang }: { status: AuthStatus; lang: Lang }) {
+  const fa = lang === 'fa';
+  const containerStyle: React.CSSProperties = {
+    height: '100dvh',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 32,
+    textAlign: 'center',
+    gap: 16,
+    background: 'var(--tg-theme-bg-color, #fff)',
+    color: 'var(--tg-theme-text-color, #000)',
+    direction: fa ? 'rtl' : 'ltr',
+  };
+
+  if (status === 'loading') {
+    return (
+      <div style={containerStyle}>
+        <Spinner size="m" />
+      </div>
+    );
+  }
+
+  if (status === 'no_telegram') {
+    return (
+      <div style={containerStyle}>
+        <div style={{ fontSize: 56 }}>✈️</div>
+        <div style={{ fontWeight: 700, fontSize: 20 }}>
+          {fa ? 'این اپ فقط در تلگرام کار می‌کند' : 'Open in Telegram'}
+        </div>
+        <div style={{ color: '#888', fontSize: 14, lineHeight: 1.6 }}>
+          {fa
+            ? 'لطفاً این اپ را از طریق تلگرام باز کنید'
+            : 'Please open this mini app through the Telegram bot'}
+        </div>
+      </div>
+    );
+  }
+
+  if (status === 'not_registered') {
+    return (
+      <div style={containerStyle}>
+        <div style={{ fontSize: 56 }}>🤖</div>
+        <div style={{ fontWeight: 700, fontSize: 20 }}>
+          {fa ? 'ابتدا ربات را شروع کنید' : 'Start the bot first'}
+        </div>
+        <div style={{ color: '#888', fontSize: 14, lineHeight: 1.6 }}>
+          {fa
+            ? 'دستور /start را در ربات تلگرام ارسال کنید، سپس این اپ را دوباره باز کنید'
+            : 'Send /start to the bot in Telegram, then reopen this app'}
+        </div>
+        <div
+          style={{
+            marginTop: 8,
+            background: '#f0f0f0',
+            borderRadius: 10,
+            padding: '8px 18px',
+            fontFamily: 'monospace',
+            fontSize: 18,
+            fontWeight: 700,
+          }}
+        >
+          /start
+        </div>
+      </div>
+    );
+  }
+
+  // auth_error
+  return (
+    <div style={containerStyle}>
+      <div style={{ fontSize: 56 }}>🔒</div>
+      <div style={{ fontWeight: 700, fontSize: 20 }}>
+        {fa ? 'خطای احراز هویت' : 'Session error'}
+      </div>
+      <div style={{ color: '#888', fontSize: 14, lineHeight: 1.6 }}>
+        {fa
+          ? 'لطفاً اپ را ببندید و از طریق تلگرام دوباره باز کنید'
+          : 'Please close and reopen the app from Telegram'}
+      </div>
+      <button
+        onClick={() => window.location.reload()}
+        style={{
+          marginTop: 8,
+          background: '#007aff',
+          color: '#fff',
+          border: 'none',
+          borderRadius: 12,
+          padding: '12px 28px',
+          fontSize: 16,
+          fontWeight: 600,
+          cursor: 'pointer',
+        }}
+      >
+        {fa ? 'تلاش مجدد' : 'Retry'}
+      </button>
+    </div>
+  );
+}
+
 function AppInner() {
-  const [tab, setTab]         = useState<Tab>('dashboard');
-  const [aiPage, setAiPage]   = useState<AiPage>('hub');
+  const [tab, setTab]           = useState<Tab>('dashboard');
+  const [aiPage, setAiPage]     = useState<AiPage>('hub');
   const [dashPage, setDashPage] = useState<DashPage>('main');
-  const [me, setMe]           = useState<Me | null>(null);
+  const [me, setMe]             = useState<Me | null>(null);
+  const [authStatus, setAuthStatus] = useState<AuthStatus>('loading');
   const { lang, setLang, t, dir } = useLang();
 
   const platform = typeof window !== 'undefined' &&
     /iphone|ipad|mac/i.test(navigator.userAgent) ? 'ios' : 'base';
 
   useEffect(() => {
-    api.me().then((data) => {
-      setMe(data);
-      if (data.language === 'fa' || data.language === 'en') {
-        setLang(data.language as Lang);
-      }
-    }).catch(() => {});
+    // If initData is empty we're not inside Telegram
+    if (!getInitDataRaw()) {
+      setAuthStatus('no_telegram');
+      return;
+    }
+
+    api.me()
+      .then((data) => {
+        setMe(data);
+        if (data.language === 'fa' || data.language === 'en') {
+          setLang(data.language as Lang);
+        }
+        setAuthStatus('ok');
+      })
+      .catch((e: unknown) => {
+        if (e instanceof ApiError) {
+          if (e.status === 404) {
+            setAuthStatus('not_registered');
+          } else if (e.status === 401) {
+            setAuthStatus('auth_error');
+          } else {
+            setAuthStatus('auth_error');
+          }
+        } else {
+          setAuthStatus('auth_error');
+        }
+      });
   }, []);
 
   function handleTabChange(newTab: Tab) {
@@ -91,10 +217,18 @@ function AppInner() {
     api.updateMe({ language: next }).catch(() => {});
   }
 
-  const currency = me?.default_currency ?? 'USD';
-  const aiTitles = lang === 'fa' ? AI_PAGE_TITLES_FA : AI_PAGE_TITLES_EN;
+  const currency    = me?.default_currency ?? 'USD';
+  const aiTitles    = lang === 'fa' ? AI_PAGE_TITLES_FA : AI_PAGE_TITLES_EN;
+  const showAiBack  = tab === 'ai' && aiPage !== 'hub';
 
-  const showAiBack = tab === 'ai' && aiPage !== 'hub';
+  // Show auth screen until we know we're OK
+  if (authStatus !== 'ok') {
+    return (
+      <AppRoot platform={platform}>
+        <AuthScreen status={authStatus} lang={lang} />
+      </AppRoot>
+    );
+  }
 
   return (
     <AppRoot platform={platform}>
@@ -108,7 +242,7 @@ function AppInner() {
           background: 'var(--tg-theme-bg-color, #fff)',
         }}
       >
-        {/* Persistent top bar: language toggle + AI sub-page title */}
+        {/* Persistent top bar */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
@@ -156,7 +290,7 @@ function AppInner() {
           </button>
         </div>
 
-        {/* Scrollable content — overflow:hidden when AI chat is open so chat handles its own scroll */}
+        {/* Scrollable content */}
         <div style={{
           flex: 1,
           overflowY: tab === 'ai' && aiPage === 'chat' ? 'hidden' : 'auto',
