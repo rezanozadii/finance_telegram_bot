@@ -123,6 +123,7 @@ export interface HealthScore {
   total: number;
   personality: string;
   components: Record<string, HealthScoreComponent>;
+  account_age_days?: number;
 }
 
 export interface UserGoal {

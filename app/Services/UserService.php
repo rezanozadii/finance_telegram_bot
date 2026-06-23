@@ -32,6 +32,7 @@ class UserService
             Category::create([
                 'user_id' => $user->id,
                 'name'    => $cat->name,
+                'name_fa' => $cat->name_fa,
                 'type'    => $cat->type,
                 'icon'    => $cat->icon,
             ]);

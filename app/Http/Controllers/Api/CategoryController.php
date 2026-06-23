@@ -24,7 +24,7 @@ class CategoryController extends Controller
 
         return response()->json($categories->map(fn ($c) => [
             'id'        => $c->id,
-            'name'      => $c->name,
+            'name'      => $c->localizedName(),
             'type'      => $c->type,
             'icon'      => $c->icon,
             'parent_id' => $c->parent_id,

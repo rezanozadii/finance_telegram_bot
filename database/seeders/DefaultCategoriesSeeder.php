@@ -10,36 +10,36 @@ class DefaultCategoriesSeeder extends Seeder
     public function run(): void
     {
         $expense = [
-            ['name' => 'Food & Dining', 'icon' => '🍔'],
-            ['name' => 'Transport', 'icon' => '🚗'],
-            ['name' => 'Housing', 'icon' => '🏠'],
-            ['name' => 'Health', 'icon' => '💊'],
-            ['name' => 'Entertainment', 'icon' => '🎬'],
-            ['name' => 'Shopping', 'icon' => '🛍️'],
-            ['name' => 'Education', 'icon' => '📚'],
-            ['name' => 'Utilities', 'icon' => '💡'],
-            ['name' => 'Other', 'icon' => '📦'],
+            ['name' => 'Food & Dining',  'name_fa' => 'غذا و رستوران',    'icon' => '🍔'],
+            ['name' => 'Transport',      'name_fa' => 'حمل‌ونقل',         'icon' => '🚗'],
+            ['name' => 'Housing',        'name_fa' => 'مسکن',              'icon' => '🏠'],
+            ['name' => 'Health',         'name_fa' => 'سلامت',             'icon' => '💊'],
+            ['name' => 'Entertainment',  'name_fa' => 'سرگرمی',            'icon' => '🎬'],
+            ['name' => 'Shopping',       'name_fa' => 'خرید',              'icon' => '🛍️'],
+            ['name' => 'Education',      'name_fa' => 'آموزش',             'icon' => '📚'],
+            ['name' => 'Utilities',      'name_fa' => 'قبوض',              'icon' => '💡'],
+            ['name' => 'Other',          'name_fa' => 'سایر',              'icon' => '📦'],
         ];
 
         $income = [
-            ['name' => 'Salary', 'icon' => '💼'],
-            ['name' => 'Freelance', 'icon' => '💻'],
-            ['name' => 'Investment', 'icon' => '📈'],
-            ['name' => 'Gift', 'icon' => '🎁'],
-            ['name' => 'Other Income', 'icon' => '💰'],
+            ['name' => 'Salary',         'name_fa' => 'حقوق',             'icon' => '💼'],
+            ['name' => 'Freelance',      'name_fa' => 'فریلنسر',          'icon' => '💻'],
+            ['name' => 'Investment',     'name_fa' => 'سرمایه‌گذاری',     'icon' => '📈'],
+            ['name' => 'Gift',           'name_fa' => 'هدیه',             'icon' => '🎁'],
+            ['name' => 'Other Income',   'name_fa' => 'سایر درآمدها',    'icon' => '💰'],
         ];
 
         foreach ($expense as $cat) {
-            Category::firstOrCreate(
+            Category::updateOrCreate(
                 ['user_id' => null, 'name' => $cat['name'], 'type' => 'expense'],
-                ['icon' => $cat['icon']]
+                ['icon' => $cat['icon'], 'name_fa' => $cat['name_fa']]
             );
         }
 
         foreach ($income as $cat) {
-            Category::firstOrCreate(
+            Category::updateOrCreate(
                 ['user_id' => null, 'name' => $cat['name'], 'type' => 'income'],
-                ['icon' => $cat['icon']]
+                ['icon' => $cat['icon'], 'name_fa' => $cat['name_fa']]
             );
         }
     }

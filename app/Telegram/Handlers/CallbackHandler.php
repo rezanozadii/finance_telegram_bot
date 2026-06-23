@@ -164,7 +164,7 @@ class CallbackHandler
                 $emoji  = match ($txn->type) { 'income' => '💰', 'expense' => '💸', 'transfer' => '🔄' };
                 $amount = number_format($txn->amount, 2);
                 $date   = $txn->occurred_at->format('M d');
-                $label  = $txn->description ?: ($txn->category?->name ?? 'Uncategorized');
+                $label  = $txn->description ?: ($txn->category ? $txn->category->localizedName() : __('bot.txn_uncategorized'));
                 $lines[] = "{$emoji} {$date} · *{$txn->currency} {$amount}* · {$label}";
             }
             $text = implode("\n", $lines);
@@ -217,6 +217,7 @@ class CallbackHandler
 
     private function sendHealthScore(int|string $chatId, User $user, string $lang): void
     {
+        Telegram::sendChatAction(['chat_id' => $chatId, 'action' => 'typing']);
         Telegram::sendMessage([
             'chat_id' => $chatId,
             'text'    => $lang === 'fa' ? '⏳ در حال محاسبه امتیاز سلامت مالی...' : '⏳ Calculating your financial health score...',
@@ -301,6 +302,7 @@ class CallbackHandler
 
     private function sendCoaching(int|string $chatId, User $user, string $lang): void
     {
+        Telegram::sendChatAction(['chat_id' => $chatId, 'action' => 'typing']);
         Telegram::sendMessage([
             'chat_id' => $chatId,
             'text'    => $lang === 'fa' ? '⏳ در حال آماده کردن مشاوره مالی...' : '⏳ Preparing your financial coaching...',

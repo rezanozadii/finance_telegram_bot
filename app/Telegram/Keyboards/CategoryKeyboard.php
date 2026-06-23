@@ -29,7 +29,7 @@ class CategoryKeyboard
     public static function parentSelector(Collection $topLevel): array
     {
         $rows = $topLevel->map(fn (Category $c) => [
-            ['text' => ($c->icon ? $c->icon . ' ' : '') . $c->name, 'callback_data' => "category_parent:{$c->id}"],
+            ['text' => ($c->icon ? $c->icon . ' ' : '') . $c->localizedName(), 'callback_data' => "category_parent:{$c->id}"],
         ])->values()->toArray();
 
         $rows[] = [['text' => __('bot.btn_no_parent'), 'callback_data' => 'category_parent:none']];
@@ -40,7 +40,7 @@ class CategoryKeyboard
     public static function manageGrid(Collection $categories): array
     {
         $buttons = $categories->map(fn (Category $c) => [
-            'text'          => ($c->icon ? $c->icon . ' ' : '') . $c->name,
+            'text'          => ($c->icon ? $c->icon . ' ' : '') . $c->localizedName(),
             'callback_data' => "category_edit:{$c->id}",
         ])->values()->toArray();
 

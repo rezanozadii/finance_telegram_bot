@@ -406,7 +406,7 @@ class RecurringHandler
         $freqLabel = ucfirst($template->frequency);
         $dateLabel = $template->next_due_date->format('M d, Y');
         $catLabel  = $template->category
-            ? ($template->category->icon ? $template->category->icon . ' ' : '') . $template->category->name
+            ? ($template->category->icon ? $template->category->icon . ' ' : '') . $template->category->localizedName()
             : '—';
 
         Telegram::editMessageText([

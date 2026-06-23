@@ -68,6 +68,14 @@ export function HealthScore(_props: { onBack?: () => void }) {
           </Cell>
         ))}
       </Section>
+
+      {data.account_age_days !== undefined && data.account_age_days < 30 && (
+        <Section>
+          <Cell style={{ color: '#888', fontSize: 13 }}>
+            ℹ️ {t('new_account_notice').replace('{days}', String(data.account_age_days))}
+          </Cell>
+        </Section>
+      )}
     </List>
   );
 }

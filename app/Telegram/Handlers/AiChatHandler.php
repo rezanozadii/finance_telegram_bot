@@ -22,10 +22,11 @@ class AiChatHandler
         $text       = trim($message->getText() ?? '');
 
         if (in_array(strtolower($text), ['/done', '/exit', '/stop'])) {
+            $u = User::where('telegram_id', $telegramId)->first();
             $this->state->clear($telegramId);
             Telegram::sendMessage([
                 'chat_id' => $chatId,
-                'text'    => '✅ Exited AI chat mode.',
+                'text'    => $u?->language === 'fa' ? '✅ از حالت چت خارج شدید.' : '✅ Exited AI chat mode.',
             ]);
             return;
         }
@@ -39,6 +40,7 @@ class AiChatHandler
             return;
         }
 
+        Telegram::sendChatAction(['chat_id' => $chatId, 'action' => 'typing']);
         Telegram::sendMessage([
             'chat_id' => $chatId,
             'text'    => $user->language === 'fa' ? '⏳ در حال پردازش...' : '⏳ Thinking...',

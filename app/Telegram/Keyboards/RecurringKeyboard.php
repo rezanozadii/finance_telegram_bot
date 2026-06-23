@@ -23,7 +23,7 @@ class RecurringKeyboard
     public static function categorySelector(Collection $categories): array
     {
         $buttons = $categories->map(fn (Category $c) => [
-            'text'          => ($c->icon ? $c->icon . ' ' : '') . $c->name,
+            'text'          => ($c->icon ? $c->icon . ' ' : '') . $c->localizedName(),
             'callback_data' => "rec_category:{$c->id}",
         ])->values()->toArray();
 

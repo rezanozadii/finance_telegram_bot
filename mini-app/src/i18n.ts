@@ -79,6 +79,7 @@ const en = {
   your_score: 'Your Score',
   personality: 'Personality',
   score_components: 'Score Breakdown',
+  new_account_notice: 'Your account is {days} day(s) old. Score accuracy improves as you log more transactions.',
 
   // Goals
   add_goal: 'Add Goal',
@@ -269,6 +270,7 @@ const fa: Record<keyof typeof en, string> = {
   your_score: 'امتیاز شما',
   personality: 'شخصیت مالی',
   score_components: 'جزئیات امتیاز',
+  new_account_notice: 'حساب شما {days} روز قدم دارد. با ثبت تراکنش‌های بیشتر امتیاز دقیق‌تر می‌شود.',
 
   // Goals
   add_goal: 'افزودن هدف',

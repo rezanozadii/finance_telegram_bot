@@ -15,10 +15,11 @@ class HealthScoreService
 
     public function calculate(User $user, string $currency): array
     {
-        $now        = Carbon::now();
-        $userStart  = $user->created_at->copy()->startOfMonth();
-        // Never look further back than the account creation month
-        $start      = Carbon::max($now->copy()->subMonths(3)->startOfMonth(), $userStart);
+        $now            = Carbon::now();
+        $userStart      = $user->created_at->copy()->startOfMonth();
+        $threeMonthsAgo = $now->copy()->subMonths(3)->startOfMonth();
+        // Never look further back than the account creation month (Carbon 2.x-safe comparison)
+        $start          = $threeMonthsAgo->lt($userStart) ? $userStart->copy() : $threeMonthsAgo;
         $end        = $now->copy()->endOfMonth();
         $stats      = $this->calculator->getStats($user, $start, $end, $currency);
         $trend      = $this->calculator->getMonthlyTrend($user, 6, $currency);

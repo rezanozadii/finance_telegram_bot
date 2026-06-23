@@ -38,7 +38,7 @@ class TransactionKeyboard
     public static function categorySelector(Collection $categories): array
     {
         $buttons = $categories->map(fn (Category $c) => [
-            'text'          => ($c->icon ? $c->icon . ' ' : '') . $c->name,
+            'text'          => ($c->icon ? $c->icon . ' ' : '') . $c->localizedName(),
             'callback_data' => "txn_category:{$c->id}",
         ])->values()->toArray();
 
@@ -89,7 +89,7 @@ class TransactionKeyboard
     public static function aiCategorySelector(Collection $categories): array
     {
         $buttons = $categories->map(fn (Category $c) => [
-            'text'          => ($c->icon ? $c->icon . ' ' : '') . $c->name,
+            'text'          => ($c->icon ? $c->icon . ' ' : '') . $c->localizedName(),
             'callback_data' => "ai_txn_category:{$c->id}",
         ])->values()->toArray();
 

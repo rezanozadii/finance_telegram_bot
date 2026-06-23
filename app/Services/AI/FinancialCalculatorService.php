@@ -36,7 +36,7 @@ class FinancialCalculatorService
         $categories = Category::where('user_id', $user->id)->get()->keyBy('id');
 
         $topCategories = $categoryRows->map(fn ($row) => [
-            'name'   => $categories->get($row->category_id)?->name ?? 'Uncategorized',
+            'name'   => ($cat = $categories->get($row->category_id)) ? $cat->localizedName() : __('bot.txn_uncategorized'),
             'icon'   => $categories->get($row->category_id)?->icon,
             'amount' => (float) $row->total,
             'pct'    => $expenses > 0 ? round((float) $row->total / $expenses * 100, 1) : 0.0,

@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Transaction;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 
 class ReportService
@@ -47,7 +48,7 @@ class ReportService
         $byCategory = $rows->map(function ($row) use ($categories, $expenses) {
             $cat = $categories->get($row->category_id);
             return [
-                'name'   => $cat?->name ?? 'Uncategorized',
+                'name'   => $cat ? $cat->localizedName() : __('bot.txn_uncategorized'),
                 'icon'   => $cat?->icon,
                 'amount' => (float) $row->total,
                 'pct'    => $expenses > 0 ? round((float) $row->total / $expenses * 100, 1) : 0.0,
@@ -133,6 +134,22 @@ class ReportService
 
     public function periodLabel(string $type, Carbon $start, Carbon $end): string
     {
+        if (App::isLocale('fa')) {
+            $faMonths = [
+                1 => 'ژانویه', 2 => 'فوریه',  3 => 'مارس',    4 => 'آوریل',
+                5 => 'مه',     6 => 'ژوئن',   7 => 'ژوئیه',   8 => 'اوت',
+                9 => 'سپتامبر', 10 => 'اکتبر', 11 => 'نوامبر', 12 => 'دسامبر',
+            ];
+            $monthStr = fn (Carbon $d) => ($faMonths[$d->month] ?? $d->format('M')) . ' ' . $d->year;
+            return match ($type) {
+                'month', 'last_month' => $monthStr($start),
+                'quarter'             => 'فصل ' . $start->quarter . ' ' . $start->year,
+                'year'                => (string) $start->year,
+                default               => $start->day . ' ' . ($faMonths[$start->month] ?? $start->format('M')) . ' ' . $start->year
+                                        . ' – ' . $end->day . ' ' . ($faMonths[$end->month] ?? $end->format('M')) . ' ' . $end->year,
+            };
+        }
+
         return match ($type) {
             'month', 'last_month' => $start->format('F Y'),
             'quarter'             => 'Q' . $start->quarter . ' ' . $start->year,
@@ -144,10 +161,10 @@ class ReportService
     public function formatChange(float $current, float $previous): string
     {
         if ($previous == 0.0) {
-            return $current > 0 ? '↑ new' : '—';
+            return $current > 0 ? ('↑ ' . (App::isLocale('fa') ? 'جدید' : 'new')) : '—';
         }
 
-        $pct = ($current - $previous) / $previous * 100;
+        $pct   = ($current - $previous) / $previous * 100;
         $arrow = $pct >= 0 ? '↑' : '↓';
         return sprintf('%s %+.1f%%', $arrow, $pct);
     }

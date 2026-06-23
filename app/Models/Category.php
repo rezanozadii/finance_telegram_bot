@@ -5,10 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\App;
 
 class Category extends Model
 {
-    protected $fillable = ['user_id', 'name', 'type', 'parent_id', 'icon'];
+    protected $fillable = ['user_id', 'name', 'name_fa', 'type', 'parent_id', 'icon'];
+
+    public function localizedName(): string
+    {
+        return (App::isLocale('fa') && $this->name_fa) ? $this->name_fa : $this->name;
+    }
 
     public function user(): BelongsTo
     {

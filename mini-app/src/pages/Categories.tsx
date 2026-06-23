@@ -9,17 +9,19 @@ interface Props {
 }
 
 export function Categories({ onBack }: Props) {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
+    setLoading(true);
+    setError('');
     api.categories()
       .then(setCategories)
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
-  }, []);
+  }, [lang]);
 
   const income  = categories.filter((c) => c.type === 'income'  && !c.parent_id);
   const expense = categories.filter((c) => c.type === 'expense' && !c.parent_id);

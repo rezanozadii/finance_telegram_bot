@@ -180,7 +180,7 @@ class AiTransactionHandler
 
         $data                   = $this->state->data($telegramId);
         $data['category_id']    = $category->id;
-        $data['category_name']  = ($category->icon ? $category->icon . ' ' : '') . $category->name;
+        $data['category_name']  = ($category->icon ? $category->icon . ' ' : '') . $category->localizedName();
 
         // Learn: if a merchant was identified, upsert a CategorizationRule
         if (!empty($data['merchant'])) {
