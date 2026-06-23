@@ -1,4 +1,4 @@
-import type { Account, AiInsight, Budget, Category, Forecast, Friend, HealthScore, Me, Report, Subscription, Transaction, TransactionList, UserGoal } from '../types';
+import type { Account, AiInsight, Budget, Category, Forecast, Friend, Habit, HealthScore, Me, Report, Subscription, Transaction, TransactionList, UserGoal, WhatIfResult } from '../types';
 
 let _initDataRaw = '';
 
@@ -103,4 +103,16 @@ export const api = {
 
   forecast: (currency?: string) =>
     request<Forecast>(`/forecast${currency ? `?currency=${currency}` : ''}`),
+
+  createAccount: (data: { name: string; type: string; currency: string; balance?: number }) =>
+    request<Account>('/accounts', { method: 'POST', body: JSON.stringify(data) }),
+
+  habits: (currency?: string) =>
+    request<{ habits: Habit[] }>(`/ai/habits${currency ? `?currency=${currency}` : ''}`),
+
+  whatIf: (scenario: string, params: Record<string, unknown>, currency?: string) =>
+    request<WhatIfResult>('/ai/whatif', {
+      method: 'POST',
+      body: JSON.stringify({ scenario, params, currency }),
+    }),
 };

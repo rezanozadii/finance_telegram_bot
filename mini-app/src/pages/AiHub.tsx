@@ -21,6 +21,8 @@ const ITEMS: HubItem[] = [
   { page: 'forecast',      icon: '🔮', titleKey: 'forecast',       subKey: 'forecast_sub' },
   { page: 'subscriptions', icon: '🔄', titleKey: 'subscriptions',  subKey: 'subscriptions_sub' },
   { page: 'insights',      icon: '💡', titleKey: 'daily_insights', subKey: 'daily_insights_sub' },
+  { page: 'habits',        icon: '🧠', titleKey: 'habits',         subKey: 'habits_sub' },
+  { page: 'whatif',        icon: '🔭', titleKey: 'whatif',         subKey: 'whatif_sub' },
 ];
 
 export function AiHub({ onNavigate }: Props) {

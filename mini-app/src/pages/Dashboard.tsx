@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Cell, List, Section, Spinner, Headline, Text } from '@telegram-apps/telegram-ui';
 import { api } from '../api/client';
 import { useLang } from '../LangContext';
-import type { Account, Me, Transaction } from '../types';
+import type { Account, DashPage, Me, Transaction } from '../types';
 
 function fmt(amount: number, currency: string) {
   return `${currency} ${amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -16,7 +16,11 @@ function txnColor(type: Transaction['type']): string {
   return type === 'income' ? '#34c759' : type === 'expense' ? '#ff3b30' : '#007aff';
 }
 
-export function Dashboard() {
+interface Props {
+  onNavigate?: (page: DashPage) => void;
+}
+
+export function Dashboard({ onNavigate }: Props) {
   const { t } = useLang();
   const [me, setMe] = useState<Me | null>(null);
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -48,6 +52,15 @@ export function Dashboard() {
         <Cell
           before={<span style={{ fontSize: 32 }}>💰</span>}
           subtitle={`${me?.account_count ?? 0} ${t('accounts')}`}
+          after={
+            <button
+              onClick={() => onNavigate?.('settings')}
+              style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#888', padding: 4 }}
+              title={t('settings')}
+            >
+              ⚙️
+            </button>
+          }
         >
           <Headline weight="2">
             {fmt(me?.total_balance ?? 0, me?.default_currency ?? 'USD')}
@@ -55,20 +68,24 @@ export function Dashboard() {
         </Cell>
       </Section>
 
-      {accounts.length > 0 && (
-        <Section header={t('accounts')}>
-          {accounts.map((a) => (
-            <Cell
-              key={a.id}
-              before={<span style={{ fontSize: 22 }}>{acctIcon(a.type)}</span>}
-              after={<Text style={{ color: a.balance < 0 ? '#ff3b30' : undefined }}>{fmt(a.balance, a.currency)}</Text>}
-              subtitle={a.type}
-            >
-              {a.name}
-            </Cell>
-          ))}
-        </Section>
-      )}
+      <Section header={t('accounts')}>
+        {accounts.map((a) => (
+          <Cell
+            key={a.id}
+            before={<span style={{ fontSize: 22 }}>{acctIcon(a.type)}</span>}
+            after={<Text style={{ color: a.balance < 0 ? '#ff3b30' : undefined }}>{fmt(a.balance, a.currency)}</Text>}
+            subtitle={a.type}
+          >
+            {a.name}
+          </Cell>
+        ))}
+        <Cell
+          onClick={() => onNavigate?.('accounts')}
+          style={{ cursor: 'pointer', color: '#007aff' }}
+        >
+          {t('manage_accounts')} →
+        </Cell>
+      </Section>
 
       <Section header={t('recent_transactions')}>
         {recent.length === 0 ? (
@@ -89,6 +106,16 @@ export function Dashboard() {
             </Cell>
           ))
         )}
+      </Section>
+
+      <Section>
+        <Cell
+          before={<span style={{ fontSize: 20 }}>📂</span>}
+          onClick={() => onNavigate?.('categories')}
+          style={{ cursor: 'pointer' }}
+        >
+          {t('categories')}
+        </Cell>
       </Section>
     </List>
   );

@@ -74,7 +74,43 @@ export interface Me {
   language: 'en' | 'fa';
 }
 
-export type AiPage = 'hub' | 'chat' | 'health' | 'goals' | 'budgets' | 'forecast' | 'subscriptions' | 'insights';
+export type AiPage = 'hub' | 'chat' | 'health' | 'goals' | 'budgets' | 'forecast' | 'subscriptions' | 'insights' | 'habits' | 'whatif';
+
+export type DashPage = 'main' | 'accounts' | 'categories' | 'settings';
+
+export interface Habit {
+  merchant: string;
+  transaction_count: number;
+  frequency: number;
+  avg_amount: number;
+  monthly_cost: number;
+  yearly_cost: number;
+  first_seen: string;
+  last_seen: string;
+  currency: string;
+}
+
+export interface WhatIfGoalImpact {
+  goal: string;
+  remaining: number;
+  months_now: number | null;
+  months_with_change: number | null;
+}
+
+export interface WhatIfResult {
+  scenario: string;
+  monthly_savings?: number;
+  yearly_savings?: number;
+  monthly_income_increase?: number;
+  yearly_income_increase?: number;
+  monthly_savings_increase?: number;
+  yearly_total_savings?: number;
+  monthly_cost?: number;
+  yearly_savings_from_cancel?: number;
+  goal_impact?: WhatIfGoalImpact[];
+  currency: string;
+  error?: string;
+}
 
 export interface HealthScoreComponent {
   label: string;

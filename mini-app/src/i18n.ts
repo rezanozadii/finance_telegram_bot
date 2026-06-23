@@ -123,6 +123,63 @@ const en = {
   // Insights
   no_insights: 'No insights today',
   refresh: 'Refresh',
+
+  // Accounts page
+  manage_accounts: 'Manage Accounts',
+  add_account: 'Add Account',
+  account_name: 'Account Name',
+  account_type: 'Account Type',
+  initial_balance: 'Initial Balance',
+  no_accounts: 'No accounts yet',
+  type_cash: 'Cash',
+  type_card: 'Card',
+  type_bank: 'Bank',
+  type_ewallet: 'E-Wallet',
+  type_credit: 'Credit',
+
+  // Categories page
+  categories: 'Categories',
+  income_categories: 'Income Categories',
+  expense_categories: 'Expense Categories',
+  no_categories: 'No categories found',
+
+  // Settings page
+  settings: 'Settings',
+  language: 'Language',
+  lang_english: 'English',
+  lang_persian: 'فارسی',
+  profile: 'Profile',
+  default_currency: 'Default Currency',
+
+  // Habits page
+  habits: 'Spending Habits',
+  habits_sub: 'Detect your spending patterns',
+  per_month: '/mo',
+  per_year: '/yr',
+  times_per_month: 'times/mo',
+  no_habits: 'Not enough data yet',
+  avg_amount: 'Avg. amount',
+  total_monthly_cost: 'Monthly cost',
+
+  // What-If page
+  whatif: 'What-If Simulator',
+  whatif_sub: 'Simulate financial scenarios',
+  scenario_reduce: 'Reduce category spending',
+  scenario_salary: 'Salary increase',
+  scenario_save: 'Save a fixed amount',
+  scenario_cancel: 'Cancel a subscription',
+  reduction_pct: 'Reduction %',
+  increase_pct: 'Increase %',
+  save_amount: 'Monthly save amount',
+  merchant_name: 'Merchant name',
+  category_name: 'Category name',
+  simulate: 'Simulate',
+  monthly_savings: 'Monthly savings',
+  yearly_savings: 'Yearly savings',
+  goal_impact: 'Goal impact',
+  months_now: 'Months now',
+  months_after: 'Months after',
+  no_result: 'Run a simulation to see results',
 } as const;
 
 const fa: Record<keyof typeof en, string> = {
@@ -248,6 +305,63 @@ const fa: Record<keyof typeof en, string> = {
   // Insights
   no_insights: 'امروز بینشی موجود نیست',
   refresh: 'بازنشانی',
+
+  // Accounts page
+  manage_accounts: 'مدیریت حساب‌ها',
+  add_account: 'افزودن حساب',
+  account_name: 'نام حساب',
+  account_type: 'نوع حساب',
+  initial_balance: 'موجودی اولیه',
+  no_accounts: 'هنوز حسابی وجود ندارد',
+  type_cash: 'نقدی',
+  type_card: 'کارت',
+  type_bank: 'بانک',
+  type_ewallet: 'کیف پول',
+  type_credit: 'اعتباری',
+
+  // Categories page
+  categories: 'دسته‌بندی‌ها',
+  income_categories: 'دسته‌بندی درآمد',
+  expense_categories: 'دسته‌بندی هزینه',
+  no_categories: 'دسته‌بندی یافت نشد',
+
+  // Settings page
+  settings: 'تنظیمات',
+  language: 'زبان',
+  lang_english: 'English',
+  lang_persian: 'فارسی',
+  profile: 'پروفایل',
+  default_currency: 'ارز پیش‌فرض',
+
+  // Habits page
+  habits: 'عادات خرج',
+  habits_sub: 'الگوهای هزینه شما',
+  per_month: '/ماه',
+  per_year: '/سال',
+  times_per_month: 'بار/ماه',
+  no_habits: 'داده کافی وجود ندارد',
+  avg_amount: 'میانگین',
+  total_monthly_cost: 'هزینه ماهانه',
+
+  // What-If page
+  whatif: 'شبیه‌ساز',
+  whatif_sub: 'سناریوهای مالی را شبیه‌سازی کنید',
+  scenario_reduce: 'کاهش هزینه دسته‌بندی',
+  scenario_salary: 'افزایش حقوق',
+  scenario_save: 'پس‌انداز ثابت',
+  scenario_cancel: 'لغو اشتراک',
+  reduction_pct: 'درصد کاهش',
+  increase_pct: 'درصد افزایش',
+  save_amount: 'مبلغ پس‌انداز ماهانه',
+  merchant_name: 'نام فروشنده',
+  category_name: 'نام دسته‌بندی',
+  simulate: 'شبیه‌سازی',
+  monthly_savings: 'پس‌انداز ماهانه',
+  yearly_savings: 'پس‌انداز سالانه',
+  goal_impact: 'تأثیر بر اهداف',
+  months_now: 'ماه اکنون',
+  months_after: 'ماه پس از',
+  no_result: 'یک سناریو اجرا کنید',
 };
 
 export const i18n: Record<Lang, Record<keyof typeof en, string>> = { en, fa };
