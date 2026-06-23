@@ -4,8 +4,10 @@ namespace App\Telegram\Handlers;
 
 use App\Models\User;
 use App\Services\ReportService;
+use App\Telegram\Keyboards\MainKeyboard;
 use App\Telegram\Keyboards\ReportKeyboard;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\App;
 use Telegram\Bot\Laravel\Facades\Telegram;
 use Telegram\Bot\Objects\CallbackQuery;
 
@@ -21,8 +23,19 @@ class ReportHandler
 
         Telegram::answerCallbackQuery(['callback_query_id' => $query->getId()]);
 
-        // action format: "report:month" | "report:last_month" etc.
+        // action format: "report:month" | "report:last_month" | "report:home" etc.
         $type = substr($action, 7); // strip "report:"
+
+        if ($type === 'home') {
+            $user = User::where('telegram_id', $telegramId)->first();
+            $lang = $user->language ?? 'en';
+            Telegram::sendMessage([
+                'chat_id'      => $chatId,
+                'text'         => $lang === 'fa' ? '🏠 منوی اصلی' : '🏠 Main Menu',
+                'reply_markup' => json_encode(MainKeyboard::main($lang)),
+            ]);
+            return;
+        }
 
         $this->show($telegramId, $chatId, $type, $messageId);
     }
@@ -36,6 +49,9 @@ class ReportHandler
     ): void {
         $user = User::where('telegram_id', $telegramId)->firstOrFail();
         $currency = $user->default_currency ?? 'USD';
+        $lang     = $user->language ?? 'en';
+
+        App::setLocale($lang);
 
         // Resolve period bounds
         if ($periodType === 'month' && $monthParam) {
@@ -63,7 +79,7 @@ class ReportHandler
         $text = $this->buildText($data, $prevData, $label, $prevLabel, $currency);
 
         $isNamedPeriod = in_array($periodType, ['month', 'last_month', 'quarter', 'year']);
-        $keyboard      = $isNamedPeriod ? ReportKeyboard::periodNav($periodType) : null;
+        $keyboard      = $isNamedPeriod ? ReportKeyboard::periodNav($periodType, $lang) : null;
 
         $payload = [
             'chat_id'    => $chatId,
@@ -104,7 +120,6 @@ class ReportHandler
                 $name  = $cat['name'];
                 $pct   = number_format($cat['pct'], 1) . '%';
                 $amt   = $fmt($cat['amount']);
-                // Pad so amounts align
                 $lines[] = "{$icon} {$name}  {$pct}  {$currency} {$amt}";
             }
         }
@@ -116,8 +131,8 @@ class ReportHandler
         $incomeChange  = $this->reportService->formatChange($d['income'], $p['income']);
         $expenseChange = $this->reportService->formatChange($d['expenses'], $p['expenses']);
 
-        $lines[] = "Income:   {$currency} " . $fmt($p['income']) . "  {$incomeChange}";
-        $lines[] = "Expenses: {$currency} " . $fmt($p['expenses']) . "  {$expenseChange}";
+        $lines[] = __('bot.report_income')   . ":   {$currency} " . $fmt($p['income']) . "  {$incomeChange}";
+        $lines[] = __('bot.report_expenses') . ": {$currency} " . $fmt($p['expenses']) . "  {$expenseChange}";
 
         return implode("\n", $lines);
     }
