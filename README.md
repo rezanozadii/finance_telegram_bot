@@ -4,7 +4,7 @@
 
 A full-stack **AI-powered personal finance assistant** built as a Telegram bot + Mini App. Track income and expenses, manage accounts, split costs with friends, and get intelligent coaching from a built-in AI Financial Advisor — all inside Telegram.
 
-> **Latest:** v1.2.4 — Complete bilingual support (EN/FA) across both the bot and mini app, full-screen layout fixes, and financial health score improvements.
+> **Latest:** v1.2.5 — Goals and Budgets pages fixed (black screen bug); security hardened with rate limiting per authenticated user and response security headers.
 
 ---
 
@@ -371,6 +371,13 @@ All endpoints are under `/api/*` and require `Authorization: tma <initDataRaw>` 
 ---
 
 ## Changelog
+
+### v1.2.5
+- **Mini App:** Fixed Goals page showing black/blank screen — `GoalController` was returning `{goals:[...]}` but the TypeScript client expected a plain `UserGoal[]` array; `goals.map()` on an object crashes silently → blank screen. All responses now return plain arrays.
+- **Mini App:** Fixed Budgets page with the same wrapping bug (`{budgets:[...]}` vs `Budget[]`) plus two field-name mismatches: `spent` → `spent_amount` and `category` string → `{id, name}` object, matching the TypeScript `Budget` interface.
+- **Security:** `GoalController::update()` previously accepted arbitrary input via `$request->only()` with no validation. Added strict rules: `current_amount` numeric ≥ 0, `status` in enum, `notes` max 1000 chars.
+- **Security:** Added `SecurityHeaders` middleware applied globally — sets `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `X-XSS-Protection`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` restricting geolocation/microphone/camera/payment, `Content-Security-Policy: default-src 'none'` on all API routes, and strips `Server`/`X-Powered-By` fingerprinting headers.
+- **Security:** Added named rate limiters keyed by **authenticated user id** (not IP, so it's fair across NAT): 60 req/min on general API, 15 req/min on AI endpoints (chat, health-score, insights, subscriptions, habits, what-if), 120 req/min by IP on the Telegram webhook.
 
 ### v1.2.4
 - **Mini App:** API middleware (`TelegramInitDataAuth`) now sets `App::setLocale()` from the user's language, so all API responses respect the user's locale via `__()`
