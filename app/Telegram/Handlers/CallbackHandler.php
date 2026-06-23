@@ -102,6 +102,7 @@ class CallbackHandler
             'health'     => $this->sendHealthScore($chatId, $user, $lang),
             'insights'   => $this->sendInsights($chatId, $user, $lang),
             'coach'      => $this->sendCoaching($chatId, $user, $lang),
+            'menu'       => $this->sendSettingsMenu($chatId, $lang),
             default      => null,
         };
     }
@@ -120,6 +121,7 @@ class CallbackHandler
         match ($sub) {
             'exit'          => $this->exitAiChat($telegramId, $chatId, $lang),
             'subscriptions' => $this->sendSubscriptions($chatId, $user, $lang),
+            'start_chat'    => $this->startAiChat($telegramId, $chatId, $lang),
             default         => null,
         };
     }
@@ -339,9 +341,41 @@ class CallbackHandler
     {
         $this->state->clear($telegramId);
         Telegram::sendMessage([
-            'chat_id' => $chatId,
-            'text'    => $lang === 'fa' ? '✅ از حالت چت خارج شدید.' : '✅ Exited AI chat.',
+            'chat_id'      => $chatId,
+            'text'         => $lang === 'fa' ? '✅ از حالت چت خارج شدید.' : '✅ Exited AI chat.',
             'reply_markup' => json_encode(\App\Telegram\Keyboards\MainKeyboard::main($lang)),
+        ]);
+    }
+
+    private function startAiChat(int|string $telegramId, int|string $chatId, string $lang): void
+    {
+        $this->state->set($telegramId, 'ai_chat');
+
+        $text = $lang === 'fa'
+            ? "🤖 *دستیار مالی هوش مصنوعی*\n\nسوال مالی خود را بنویسید.\nبرای خروج /done را بزنید."
+            : "🤖 *AI Financial Assistant*\n\nAsk me anything about your finances.\nType /done to exit.";
+
+        Telegram::sendMessage([
+            'chat_id'      => $chatId,
+            'text'         => $text,
+            'parse_mode'   => 'Markdown',
+            'reply_markup' => json_encode([
+                'inline_keyboard' => [[
+                    ['text' => $lang === 'fa' ? '❌ خروج' : '❌ Exit chat', 'callback_data' => 'ai:exit'],
+                ]],
+            ]),
+        ]);
+    }
+
+    private function sendSettingsMenu(int|string $chatId, string $lang): void
+    {
+        $text = $lang === 'fa' ? "⚙️ *تنظیمات*\nیک گزینه انتخاب کنید:" : "⚙️ *Settings*\nChoose an option:";
+
+        Telegram::sendMessage([
+            'chat_id'      => $chatId,
+            'text'         => $text,
+            'parse_mode'   => 'Markdown',
+            'reply_markup' => json_encode(\App\Telegram\Keyboards\MainKeyboard::settings($lang)),
         ]);
     }
 }
