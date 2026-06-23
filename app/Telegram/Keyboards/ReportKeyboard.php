@@ -4,9 +4,14 @@ namespace App\Telegram\Keyboards;
 
 class ReportKeyboard
 {
-    public static function periodNav(string $activePeriod): array
+    public static function periodNav(string $activePeriod, string $lang = 'en'): array
     {
-        $periods = [
+        $periods = $lang === 'fa' ? [
+            'month'      => 'ماه جاری',
+            'last_month' => 'ماه گذشته',
+            'quarter'    => 'سه‌ماهه جاری',
+            'year'       => 'سال جاری',
+        ] : [
             'month'      => 'This Month',
             'last_month' => 'Last Month',
             'quarter'    => 'This Quarter',
@@ -21,10 +26,12 @@ class ReportKeyboard
             ];
         }
 
-        // Two rows: [This Month] [Last Month] / [This Quarter] [This Year]
+        $homeLabel = $lang === 'fa' ? '🏠 بازگشت به خانه' : '🏠 Home';
+
         return ['inline_keyboard' => [
             array_slice($buttons, 0, 2),
             array_slice($buttons, 2, 2),
+            [['text' => $homeLabel, 'callback_data' => 'report:home']],
         ]];
     }
 }
