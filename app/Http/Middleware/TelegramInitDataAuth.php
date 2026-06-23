@@ -26,10 +26,11 @@ class TelegramInitDataAuth
             return response()->json(['error' => 'Invalid initData signature'], 401);
         }
 
-        $params = $this->parseInitData($initData);
+        $params = [];
+        parse_str($initData, $params);
 
         $authDate = (int) ($params['auth_date'] ?? 0);
-        // Allow up to 7 days — Telegram mini apps can stay open a long time
+        // 7 days — mini apps can stay open a long time
         if ($authDate > 0 && time() - $authDate > 604800) {
             return response()->json(['error' => 'Session expired — please reopen the app'], 401);
         }
@@ -51,28 +52,10 @@ class TelegramInitDataAuth
         return $next($request);
     }
 
-    /**
-     * Parse Telegram initData query string manually to avoid parse_str quirks.
-     * Uses rawurldecode for values so + is not treated as space.
-     */
-    private function parseInitData(string $initData): array
-    {
-        $result = [];
-        foreach (explode('&', $initData) as $part) {
-            $eq = strpos($part, '=');
-            if ($eq === false) {
-                continue;
-            }
-            $key   = rawurldecode(substr($part, 0, $eq));
-            $value = rawurldecode(substr($part, $eq + 1));
-            $result[$key] = $value;
-        }
-        return $result;
-    }
-
     private function validateHash(string $initData): bool
     {
-        $params = $this->parseInitData($initData);
+        $params = [];
+        parse_str($initData, $params);
 
         $receivedHash = $params['hash'] ?? '';
         if ($receivedHash === '') {
@@ -82,17 +65,17 @@ class TelegramInitDataAuth
         unset($params['hash']);
         ksort($params);
 
-        // Rebuild data-check-string from decoded values
-        $lines = [];
-        foreach ($params as $k => $v) {
-            $lines[] = "{$k}={$v}";
-        }
-        $dataCheckString = implode("\n", $lines);
+        $dataCheckString = implode("\n", array_map(
+            fn (string $k, string $v) => "{$k}={$v}",
+            array_keys($params),
+            array_values($params),
+        ));
 
-        $botToken  = config('services.telegram.bot_token', env('TELEGRAM_BOT_TOKEN', ''));
+        // Use the configured token (works even when config is cached)
+        $botToken  = config('telegram.bots.mybot.token', '');
         $secretKey = hash_hmac('sha256', $botToken, 'WebAppData', true);
         $expected  = hash_hmac('sha256', $dataCheckString, $secretKey);
 
-        return hash_equals($expected, strtolower($receivedHash));
+        return hash_equals($expected, $receivedHash);
     }
 }
