@@ -53,14 +53,18 @@ class TransactionService
         });
     }
 
-    public function listRecent(User $user, int $limit = 10): Collection
+    public function listRecent(User $user, int $limit = 10, ?string $type = null): Collection
     {
-        return $user->transactions()
+        $query = $user->transactions()
             ->with(['account', 'category', 'toAccount'])
             ->orderByDesc('occurred_at')
-            ->orderByDesc('id')
-            ->limit($limit)
-            ->get();
+            ->orderByDesc('id');
+
+        if ($type !== null) {
+            $query->where('type', $type);
+        }
+
+        return $query->limit($limit)->get();
     }
 
     // ── Balance helpers ──────────────────────────────────────────────────────

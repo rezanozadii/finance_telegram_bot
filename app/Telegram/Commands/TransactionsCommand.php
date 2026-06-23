@@ -5,6 +5,7 @@ namespace App\Telegram\Commands;
 use App\Models\User;
 use App\Services\TransactionService;
 use Telegram\Bot\Commands\Command;
+use Telegram\Bot\Laravel\Facades\Telegram;
 
 class TransactionsCommand extends Command
 {
@@ -21,14 +22,24 @@ class TransactionsCommand extends Command
             return;
         }
 
+        $lang         = $user->language ?? 'en';
         $transactions = app(TransactionService::class)->listRecent($user, 10);
+        $chatId       = $this->getUpdate()->getMessage()->getChat()->getId();
 
         if ($transactions->isEmpty()) {
-            $this->replyWithMessage(['text' => __('bot.txn_none')]);
+            Telegram::sendMessage([
+                'chat_id'      => $chatId,
+                'text'         => __('bot.txn_none'),
+                'reply_markup' => json_encode([
+                    'inline_keyboard' => [[
+                        ['text' => $lang === 'fa' ? '➕ افزودن تراکنش' : '➕ Add Transaction', 'callback_data' => 'txn:start'],
+                    ]],
+                ]),
+            ]);
             return;
         }
 
-        $lines = ["📋 *Recent Transactions*\n"];
+        $lines = [$lang === 'fa' ? "📋 *تراکنش‌های اخیر*\n" : "📋 *Recent Transactions*\n"];
 
         foreach ($transactions as $txn) {
             $typeEmoji = match ($txn->type) {
@@ -46,9 +57,22 @@ class TransactionsCommand extends Command
             $lines[] = "{$typeEmoji} {$date} · *{$txn->currency} {$amount}* · {$label} _({$txn->account->name})_";
         }
 
-        $this->replyWithMessage([
-            'text'       => implode("\n", $lines),
-            'parse_mode' => 'Markdown',
+        Telegram::sendMessage([
+            'chat_id'      => $chatId,
+            'text'         => implode("\n", $lines),
+            'parse_mode'   => 'Markdown',
+            'reply_markup' => json_encode([
+                'inline_keyboard' => [
+                    [
+                        ['text' => $lang === 'fa' ? '💸 هزینه' : '💸 Expense',   'callback_data' => 'txn_filter:expense'],
+                        ['text' => $lang === 'fa' ? '💰 درآمد' : '💰 Income',    'callback_data' => 'txn_filter:income'],
+                        ['text' => $lang === 'fa' ? '🔄 انتقال' : '🔄 Transfer', 'callback_data' => 'txn_filter:transfer'],
+                    ],
+                    [
+                        ['text' => $lang === 'fa' ? '➕ افزودن تراکنش' : '➕ Add Transaction', 'callback_data' => 'txn:start'],
+                    ],
+                ],
+            ]),
         ]);
     }
 }

@@ -23,15 +23,33 @@ class AiCommand extends Command
         }
 
         $chatId = $this->getUpdate()->getMessage()->getChat()->getId();
+        $lang   = $user->language ?? 'en';
 
         app(ConversationStateService::class)->set($from->getId(), 'ai_chat');
 
+        $text = $lang === 'fa'
+            ? "🤖 *دستیار مالی هوش مصنوعی*\n\nسلام! سوال مالی خود را بنویسید یا یک گزینه سریع انتخاب کنید.\n\nبرای خروج /done را بزنید."
+            : "🤖 *AI Financial Assistant*\n\nHello! Ask me anything about your finances, or pick a quick option below.\n\nType /done to exit.";
+
         Telegram::sendMessage([
             'chat_id'      => $chatId,
-            'text'         => $user->language === 'fa'
-                ? "🤖 *دستیار مالی هوش مصنوعی*\n\nسلام! من دستیار مالی شما هستم. هر سوالی درباره مالیه‌هاتون دارید بپرسید.\n\nبرای خروج /done را بزنید."
-                : "🤖 *AI Financial Assistant*\n\nHello! I'm your personal finance AI. Ask me anything about your finances.\n\nType /done to exit.",
+            'text'         => $text,
             'parse_mode'   => 'Markdown',
+            'reply_markup' => json_encode([
+                'inline_keyboard' => [
+                    [
+                        ['text' => $lang === 'fa' ? '❤️ سلامت مالی' : '❤️ Health Score',   'callback_data' => 'settings:health'],
+                        ['text' => $lang === 'fa' ? '💡 بینش‌ها' : '💡 Daily Insights',    'callback_data' => 'settings:insights'],
+                    ],
+                    [
+                        ['text' => $lang === 'fa' ? '🏋️ مشاوره مالی' : '🏋️ Financial Coach', 'callback_data' => 'settings:coach'],
+                        ['text' => $lang === 'fa' ? '🔄 اشتراک‌ها' : '🔄 Subscriptions',    'callback_data' => 'ai:subscriptions'],
+                    ],
+                    [
+                        ['text' => $lang === 'fa' ? '❌ خروج از چت' : '❌ Exit chat', 'callback_data' => 'ai:exit'],
+                    ],
+                ],
+            ]),
         ]);
     }
 }

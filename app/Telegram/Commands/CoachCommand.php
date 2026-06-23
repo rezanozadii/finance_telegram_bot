@@ -22,20 +22,27 @@ class CoachCommand extends Command
             return;
         }
 
-        $chatId = $this->getUpdate()->getMessage()->getChat()->getId();
+        $chatId   = $this->getUpdate()->getMessage()->getChat()->getId();
+        $lang     = $user->language ?? 'en';
+        $currency = $user->default_currency ?? 'USD';
 
         Telegram::sendMessage([
             'chat_id' => $chatId,
-            'text'    => $user->language === 'fa' ? '⏳ در حال آماده کردن مشاوره مالی...' : '⏳ Preparing your financial coaching...',
+            'text'    => $lang === 'fa' ? '⏳ در حال آماده کردن مشاوره مالی...' : '⏳ Preparing your financial coaching...',
         ]);
 
-        $currency = $user->default_currency ?? 'USD';
         $coaching = app(FinancialCoachAgent::class)->weeklyCoaching($user, $currency);
 
         Telegram::sendMessage([
-            'chat_id'    => $chatId,
-            'text'       => "🏋️ *Financial Coaching*\n\n" . $coaching,
-            'parse_mode' => 'Markdown',
+            'chat_id'      => $chatId,
+            'text'         => ($lang === 'fa' ? "🏋️ *مشاوره مالی*\n\n" : "🏋️ *Financial Coaching*\n\n") . $coaching,
+            'parse_mode'   => 'Markdown',
+            'reply_markup' => json_encode([
+                'inline_keyboard' => [[
+                    ['text' => $lang === 'fa' ? '❤️ سلامت مالی' : '❤️ Health Score',   'callback_data' => 'settings:health'],
+                    ['text' => $lang === 'fa' ? '💡 بینش‌های امروز' : '💡 Insights',    'callback_data' => 'settings:insights'],
+                ]],
+            ]),
         ]);
     }
 }

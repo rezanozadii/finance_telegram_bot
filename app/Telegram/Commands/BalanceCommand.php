@@ -5,6 +5,7 @@ namespace App\Telegram\Commands;
 use App\Models\User;
 use App\Services\FriendService;
 use Telegram\Bot\Commands\Command;
+use Telegram\Bot\Laravel\Facades\Telegram;
 
 class BalanceCommand extends Command
 {
@@ -23,9 +24,19 @@ class BalanceCommand extends Command
 
         $friendService = app(FriendService::class);
         $friends       = $friendService->getFriends($user);
+        $chatId        = $this->getUpdate()->getMessage()->getChat()->getId();
+        $lang          = $user->language ?? 'en';
 
         if ($friends->isEmpty()) {
-            $this->replyWithMessage(['text' => __('bot.balance_no_friends')]);
+            Telegram::sendMessage([
+                'chat_id'      => $chatId,
+                'text'         => __('bot.balance_no_friends'),
+                'reply_markup' => json_encode([
+                    'inline_keyboard' => [[
+                        ['text' => $lang === 'fa' ? '➕ افزودن دوست' : '➕ Add Friend', 'callback_data' => 'friend:add'],
+                    ]],
+                ]),
+            ]);
             return;
         }
 
@@ -63,9 +74,16 @@ class BalanceCommand extends Command
             }
         }
 
-        $this->replyWithMessage([
-            'text'       => implode("\n", $lines),
-            'parse_mode' => 'Markdown',
+        Telegram::sendMessage([
+            'chat_id'      => $chatId,
+            'text'         => implode("\n", $lines),
+            'parse_mode'   => 'Markdown',
+            'reply_markup' => json_encode([
+                'inline_keyboard' => [[
+                    ['text' => $lang === 'fa' ? '➕ افزودن دوست' : '➕ Add Friend', 'callback_data' => 'friend:add'],
+                    ['text' => $lang === 'fa' ? '👥 دوستان' : '👥 Friends',         'callback_data' => 'friend:list'],
+                ]],
+            ]),
         ]);
     }
 }

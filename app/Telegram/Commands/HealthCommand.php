@@ -24,20 +24,50 @@ class HealthCommand extends Command
         }
 
         $chatId   = $this->getUpdate()->getMessage()->getChat()->getId();
+        $lang     = $user->language ?? 'en';
         $currency = $user->default_currency ?? 'USD';
 
         Telegram::sendMessage([
             'chat_id' => $chatId,
-            'text'    => $user->language === 'fa' ? '⏳ در حال محاسبه امتیاز سلامت مالی...' : '⏳ Calculating your financial health score...',
+            'text'    => $lang === 'fa' ? '⏳ در حال محاسبه امتیاز سلامت مالی...' : '⏳ Calculating your financial health score...',
         ]);
 
-        $score  = app(HealthScoreService::class)->calculate($user, $currency);
-        $header = $this->buildScoreHeader($score);
+        $score = app(HealthScoreService::class)->calculate($user, $currency);
+        $total = $score['total'] ?? ($score['score'] ?? 0);
+        $bar   = $this->progressBar($total);
+
+        $lines = [$lang === 'fa' ? "❤️ *امتیاز سلامت مالی*\n" : "❤️ *Financial Health Score*\n"];
+        $lines[] = "*{$total}/100*";
+        $lines[] = $bar;
+
+        if (!empty($score['personality'])) {
+            $lines[] = '';
+            $lines[] = ($lang === 'fa' ? '🧠 شخصیت: ' : '🧠 Personality: ') . $score['personality'];
+        }
+
+        if (!empty($score['components'])) {
+            $lines[] = '';
+            foreach ($score['components'] as $c) {
+                $label = is_array($c) ? ($c['label'] ?? '') : '';
+                $s     = is_array($c) ? ($c['score'] ?? 0) : 0;
+                if ($label) {
+                    $lines[] = "• *{$label}*: {$s}/100";
+                }
+            }
+        }
 
         Telegram::sendMessage([
-            'chat_id'    => $chatId,
-            'text'       => $header,
-            'parse_mode' => 'Markdown',
+            'chat_id'      => $chatId,
+            'text'         => implode("\n", $lines),
+            'parse_mode'   => 'Markdown',
+            'reply_markup' => json_encode([
+                'inline_keyboard' => [
+                    [
+                        ['text' => $lang === 'fa' ? '🏋️ دریافت مشاوره' : '🏋️ Get Coaching',    'callback_data' => 'settings:coach'],
+                        ['text' => $lang === 'fa' ? '💡 بینش‌های امروز' : '💡 Daily Insights', 'callback_data' => 'settings:insights'],
+                    ],
+                ],
+            ]),
         ]);
 
         $explanation = app(FinancialHealthAgent::class)->explainScore($user, $currency);
@@ -49,27 +79,9 @@ class HealthCommand extends Command
         ]);
     }
 
-    private function buildScoreHeader(array $score): string
+    private function progressBar(int|float $score): string
     {
-        $totalScore = $score['score'];
-        $grade      = $score['grade'];
-        $bar        = $this->progressBar($totalScore);
-
-        $lines = ["🏥 *Financial Health Score*\n"];
-        $lines[] = "*{$totalScore}/100* (Grade: {$grade})";
-        $lines[] = $bar;
-        $lines[] = '';
-
-        foreach ($score['components'] as $c) {
-            $lines[] = "• *{$c['label']}*: {$c['score']}/100 (×{$c['weight']}%)";
-        }
-
-        return implode("\n", $lines);
-    }
-
-    private function progressBar(int $score): string
-    {
-        $filled = (int) round($score / 10);
+        $filled = (int) min(10, round($score / 10));
         $empty  = 10 - $filled;
         return str_repeat('█', $filled) . str_repeat('░', $empty) . " {$score}%";
     }

@@ -24,6 +24,7 @@ class InsightsCommand extends Command
         }
 
         $chatId  = $this->getUpdate()->getMessage()->getChat()->getId();
+        $lang    = $user->language ?? 'en';
         $insight = AiInsight::where('user_id', $user->id)
             ->whereDate('insights_date', Carbon::today())
             ->latest()
@@ -32,7 +33,7 @@ class InsightsCommand extends Command
         if (!$insight) {
             Telegram::sendMessage([
                 'chat_id' => $chatId,
-                'text'    => $user->language === 'fa'
+                'text'    => $lang === 'fa'
                     ? '💡 امروز هنوز هیچ بینشی تولید نشده. فردا صبح دوباره بررسی کنید.'
                     : '💡 No insights generated yet for today. Check back tomorrow morning.',
             ]);
@@ -40,9 +41,15 @@ class InsightsCommand extends Command
         }
 
         Telegram::sendMessage([
-            'chat_id'    => $chatId,
-            'text'       => "💡 *Daily Insights*\n\n" . $insight->content,
-            'parse_mode' => 'Markdown',
+            'chat_id'      => $chatId,
+            'text'         => ($lang === 'fa' ? "💡 *بینش‌های روزانه*\n\n" : "💡 *Daily Insights*\n\n") . $insight->content,
+            'parse_mode'   => 'Markdown',
+            'reply_markup' => json_encode([
+                'inline_keyboard' => [[
+                    ['text' => $lang === 'fa' ? '❤️ سلامت مالی' : '❤️ Health Score', 'callback_data' => 'settings:health'],
+                    ['text' => $lang === 'fa' ? '🏋️ مشاوره' : '🏋️ Coaching',        'callback_data' => 'settings:coach'],
+                ]],
+            ]),
         ]);
     }
 }
