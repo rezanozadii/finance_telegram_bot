@@ -70,7 +70,10 @@ function AuthScreen({ status, lang }: { status: AuthStatus; lang: Lang }) {
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 32,
+    paddingTop: 'calc(var(--tg-safe-top) + 32px)',
+    paddingBottom: 'calc(var(--tg-safe-bottom) + 32px)',
+    paddingLeft: 32,
+    paddingRight: 32,
     textAlign: 'center',
     gap: 16,
     background: 'var(--tg-theme-bg-color, #fff)',
@@ -244,12 +247,15 @@ function AppInner() {
           background: 'var(--tg-theme-bg-color, #fff)',
         }}
       >
-        {/* Persistent top bar */}
+        {/* Persistent top bar — padded down by Telegram's close-button overlay */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '8px 16px',
+          paddingTop: 'calc(var(--tg-safe-top) + 8px)',
+          paddingBottom: '8px',
+          paddingLeft: '16px',
+          paddingRight: '16px',
           borderBottom: '1px solid var(--tg-theme-hint-color, #e0e0e0)',
           background: 'var(--tg-theme-bg-color, #fff)',
           minHeight: 44,
@@ -332,7 +338,7 @@ function AppInner() {
         <div style={{
           flexShrink: 0,
           borderTop: '1px solid var(--tg-theme-hint-color, #e0e0e0)',
-          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+          paddingBottom: 'var(--tg-safe-bottom)',
           background: 'var(--tg-theme-bg-color, #fff)',
         }}>
           <BottomNav active={tab} onChange={handleTabChange} />
