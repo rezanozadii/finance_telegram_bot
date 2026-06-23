@@ -104,6 +104,12 @@ export const api = {
   forecast: (currency?: string) =>
     request<Forecast>(`/forecast${currency ? `?currency=${currency}` : ''}`),
 
+  updateMe: (data: { language?: 'en' | 'fa'; default_currency?: string }) =>
+    request<{ language: string; default_currency: string }>('/me', {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
+
   createAccount: (data: { name: string; type: string; currency: string; balance?: number }) =>
     request<Account>('/accounts', { method: 'POST', body: JSON.stringify(data) }),
 

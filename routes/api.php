@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('telegram.auth')->group(function () {
     Route::get('/me', [UserController::class, 'me']);
+    Route::patch('/me', [UserController::class, 'update']);
 
     Route::get('/accounts', [AccountController::class, 'index']);
     Route::post('/accounts', [AccountController::class, 'store']);

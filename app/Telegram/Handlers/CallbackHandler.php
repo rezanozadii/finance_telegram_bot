@@ -65,21 +65,28 @@ class CallbackHandler
             return;
         }
 
+        // Set currency default based on language (user can still change it later)
+        $defaultCurrency = $lang === 'fa' ? 'IRR' : 'USD';
+
         $user = User::where('telegram_id', $telegramId)->first();
-        $user->update(['language' => $lang]);
+        $user->update(['language' => $lang, 'default_currency' => $defaultCurrency]);
         App::setLocale($lang);
 
+        // Edit the inline message — Reply Keyboards cannot go in editMessageText, so remove reply_markup here
         Telegram::editMessageText([
-            'chat_id'      => $chatId,
-            'message_id'   => $messageId,
-            'text'         => __('bot.language_set'),
-            'reply_markup' => json_encode(\App\Telegram\Keyboards\MainKeyboard::main($lang)),
+            'chat_id'    => $chatId,
+            'message_id' => $messageId,
+            'text'       => $lang === 'fa'
+                ? "✅ زبان به فارسی تغییر یافت.\n💰 ارز پیش‌فرض: ریال (IRR)"
+                : "✅ Language changed to English.\n💰 Default currency: USD",
         ]);
 
-        // Send updated main keyboard
+        // Send a new message that carries the updated Reply Keyboard so the bottom menu switches language
         Telegram::sendMessage([
             'chat_id'      => $chatId,
-            'text'         => $lang === 'fa' ? '✅ زبان تغییر کرد.' : '✅ Language updated.',
+            'text'         => $lang === 'fa'
+                ? "🇮🇷 منو به فارسی به‌روز شد:"
+                : "🇬🇧 Menu updated to English:",
             'reply_markup' => json_encode(\App\Telegram\Keyboards\MainKeyboard::main($lang)),
         ]);
     }
