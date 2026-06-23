@@ -4,7 +4,7 @@
 
 A full-stack **AI-powered personal finance assistant** built as a Telegram bot + Mini App. Track income and expenses, manage accounts, split costs with friends, and get intelligent coaching from a built-in AI Financial Advisor — all inside Telegram.
 
-> **Latest:** v1.2.7 — Goal/Budget button callbacks fixed; health score now correct for new accounts; 📖 Tutorial button added to the main menu.
+> **Latest:** v1.2.8 — Full Persian/Farsi translations for reports, categories, and health score; Carbon 2.x compatibility fix; real Telegram typing indicator added.
 
 ---
 
@@ -372,6 +372,18 @@ All endpoints are under `/api/*` and require `Authorization: tma <initDataRaw>` 
 ---
 
 ## Changelog
+
+### v1.2.8
+- **Bot:** Fixed Persian reports showing English month names — `ReportService::periodLabel()` now returns Farsi month names (e.g. "خرداد ۱۴۰۳") when user language is `fa`
+- **Bot:** Fixed "new" text in change indicators appearing in English for Persian users — now shows "جدید"
+- **Bot:** Fixed "Uncategorized" appearing in Persian reports — now uses `__('bot.txn_uncategorized')` which resolves to "بدون دسته‌بندی" for Persian users
+- **Bot:** Fixed category names shown in English in all keyboards (transaction, recurring, category management) — `Category::localizedName()` method now returns `name_fa` when locale is `fa`
+- **Bot:** Fixed health score crashing on Carbon 2.x installations — `Carbon::max()` static call replaced with a Carbon 2.x-safe ternary comparison
+- **Bot:** Added real Telegram typing indicator (`sendChatAction`) before AI health score, coaching, and chat responses — bot now shows "typing…" in the chat header immediately
+- **Bot:** Fixed AI chat exit message always showing in English regardless of user language
+- **Mini App:** Categories page now re-fetches with correct language when user switches locale
+- **Mini App:** Health Score page shows a notice for new accounts (< 30 days old): score improves with more transaction history
+- **DB:** Added `name_fa` column to `categories` table with a migration that backfills all default category names
 
 ### v1.2.7
 - **Bot:** Fixed goal name button — tapping a goal name previously triggered `goal_complete` silently (the goal vanished from the list with no warning); now opens a detail view showing the progress bar and deadline, with explicit **✅ Mark Complete**, **🗑 Delete**, and **⬅️ Back** buttons
