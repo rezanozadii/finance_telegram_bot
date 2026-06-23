@@ -17,7 +17,7 @@ class BudgetKeyboard
             ];
         }
 
-        $buttons[] = [['text' => '➕ Add Budget', 'callback_data' => 'budget:add']];
+        $buttons[] = [['text' => __('bot.btn_add_budget'), 'callback_data' => 'budget:add']];
 
         return ['inline_keyboard' => $buttons];
     }
@@ -26,9 +26,9 @@ class BudgetKeyboard
     {
         return ['inline_keyboard' => [
             [
-                ['text' => '📅 Monthly', 'callback_data' => 'budget_period:monthly'],
-                ['text' => '📆 Weekly',  'callback_data' => 'budget_period:weekly'],
-                ['text' => '🗓 Yearly',  'callback_data' => 'budget_period:yearly'],
+                ['text' => __('bot.btn_period_monthly'), 'callback_data' => 'budget_period:monthly'],
+                ['text' => __('bot.btn_period_weekly'),  'callback_data' => 'budget_period:weekly'],
+                ['text' => __('bot.btn_period_yearly'),  'callback_data' => 'budget_period:yearly'],
             ],
         ]];
     }

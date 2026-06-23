@@ -14,8 +14,8 @@ class RecurringKeyboard
     {
         return [
             'inline_keyboard' => [[
-                ['text' => '💸 Expense', 'callback_data' => 'rec_type:expense'],
-                ['text' => '💰 Income',  'callback_data' => 'rec_type:income'],
+                ['text' => __('bot.btn_expense'), 'callback_data' => 'rec_type:expense'],
+                ['text' => __('bot.btn_income'),  'callback_data' => 'rec_type:income'],
             ]],
         ];
     }
@@ -28,7 +28,7 @@ class RecurringKeyboard
         ])->values()->toArray();
 
         $rows   = array_chunk($buttons, 2);
-        $rows[] = [['text' => '❌ Cancel', 'callback_data' => 'rec:cancel']];
+        $rows[] = [['text' => __('bot.btn_cancel'), 'callback_data' => 'rec:cancel']];
 
         return ['inline_keyboard' => $rows];
     }
@@ -40,7 +40,7 @@ class RecurringKeyboard
             'callback_data' => "rec_account:{$a->id}",
         ]])->values()->toArray();
 
-        $rows[] = [['text' => '❌ Cancel', 'callback_data' => 'rec:cancel']];
+        $rows[] = [['text' => __('bot.btn_cancel'), 'callback_data' => 'rec:cancel']];
 
         return ['inline_keyboard' => $rows];
     }
@@ -50,12 +50,12 @@ class RecurringKeyboard
         return [
             'inline_keyboard' => [
                 [
-                    ['text' => '📅 Daily',   'callback_data' => 'rec_freq:daily'],
-                    ['text' => '📅 Weekly',  'callback_data' => 'rec_freq:weekly'],
+                    ['text' => __('bot.btn_freq_daily'),   'callback_data' => 'rec_freq:daily'],
+                    ['text' => __('bot.btn_freq_weekly'),  'callback_data' => 'rec_freq:weekly'],
                 ],
                 [
-                    ['text' => '📅 Monthly', 'callback_data' => 'rec_freq:monthly'],
-                    ['text' => '📅 Yearly',  'callback_data' => 'rec_freq:yearly'],
+                    ['text' => __('bot.btn_freq_monthly'), 'callback_data' => 'rec_freq:monthly'],
+                    ['text' => __('bot.btn_freq_yearly'),  'callback_data' => 'rec_freq:yearly'],
                 ],
             ],
         ];
@@ -66,12 +66,12 @@ class RecurringKeyboard
         return [
             'inline_keyboard' => [
                 [
-                    ['text' => '1 day before',  'callback_data' => 'rec_reminder:1'],
-                    ['text' => '2 days before', 'callback_data' => 'rec_reminder:2'],
-                    ['text' => '3 days before', 'callback_data' => 'rec_reminder:3'],
+                    ['text' => __('bot.btn_reminder_1'), 'callback_data' => 'rec_reminder:1'],
+                    ['text' => __('bot.btn_reminder_2'), 'callback_data' => 'rec_reminder:2'],
+                    ['text' => __('bot.btn_reminder_3'), 'callback_data' => 'rec_reminder:3'],
                 ],
                 [
-                    ['text' => '🔕 No reminder', 'callback_data' => 'rec_reminder:0'],
+                    ['text' => __('bot.btn_no_reminder'), 'callback_data' => 'rec_reminder:0'],
                 ],
             ],
         ];
@@ -83,10 +83,10 @@ class RecurringKeyboard
 
         return [
             'inline_keyboard' => [
-                [['text' => '✅ Log it',        'callback_data' => "rec_confirm:{$id}"]],
+                [['text' => __('bot.btn_log_it'),      'callback_data' => "rec_confirm:{$id}"]],
                 [
-                    ['text' => '✏️ Edit amount', 'callback_data' => "rec_edit_amount:{$id}"],
-                    ['text' => '⏭ Skip',         'callback_data' => "rec_skip:{$id}"],
+                    ['text' => __('bot.btn_edit_amount'), 'callback_data' => "rec_edit_amount:{$id}"],
+                    ['text' => __('bot.btn_skip'),         'callback_data' => "rec_skip:{$id}"],
                 ],
             ],
         ];
@@ -99,7 +99,7 @@ class RecurringKeyboard
             'callback_data' => "rec_template:{$t->id}",
         ]])->values()->toArray();
 
-        $rows[] = [['text' => '➕ Add Recurring', 'callback_data' => 'rec:add']];
+        $rows[] = [['text' => __('bot.btn_add_recurring'), 'callback_data' => 'rec:add']];
 
         return ['inline_keyboard' => $rows];
     }
@@ -108,8 +108,8 @@ class RecurringKeyboard
     {
         return [
             'inline_keyboard' => [
-                [['text' => '🔴 Deactivate', 'callback_data' => "rec_deactivate:{$template->id}"]],
-                [['text' => '« Back',         'callback_data' => 'rec:list']],
+                [['text' => __('bot.btn_deactivate'), 'callback_data' => "rec_deactivate:{$template->id}"]],
+                [['text' => __('bot.btn_back'),        'callback_data' => 'rec:list']],
             ],
         ];
     }
@@ -118,8 +118,8 @@ class RecurringKeyboard
     {
         return [
             'inline_keyboard' => [[
-                ['text' => '✅ Yes, deactivate', 'callback_data' => "rec_deactivate_confirm:{$template->id}"],
-                ['text' => '❌ Cancel',           'callback_data' => "rec_template:{$template->id}"],
+                ['text' => __('bot.btn_confirm_deactivate'), 'callback_data' => "rec_deactivate_confirm:{$template->id}"],
+                ['text' => __('bot.btn_cancel'),              'callback_data' => "rec_template:{$template->id}"],
             ]],
         ];
     }

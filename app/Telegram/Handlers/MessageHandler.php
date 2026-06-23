@@ -126,8 +126,8 @@ class MessageHandler
             'parse_mode'   => 'Markdown',
             'reply_markup' => json_encode([
                 'inline_keyboard' => [[
-                    ['text' => '➕ Add Friend', 'callback_data' => 'friend:add'],
-                    ['text' => '👥 Friends',    'callback_data' => 'friend:list'],
+                    ['text' => __('bot.btn_add_friend'),  'callback_data' => 'friend:add'],
+                    ['text' => __('bot.btn_view_friends'), 'callback_data' => 'friend:list'],
                 ]],
             ]),
         ]);
@@ -159,7 +159,7 @@ class MessageHandler
             $amount = number_format($txn->amount, 2);
             $date   = $txn->occurred_at->format('M d');
             $label  = $txn->description
-                ?: ($txn->category?->name ?? ($txn->type === 'transfer' ? "→ {$txn->toAccount?->name}" : 'Uncategorized'));
+                ?: ($txn->category?->name ?? ($txn->type === 'transfer' ? "→ {$txn->toAccount?->name}" : __('bot.txn_uncategorized')));
             $lines[] = "{$typeEmoji} {$date} · *{$txn->currency} {$amount}* · {$label}";
         }
 
@@ -170,9 +170,9 @@ class MessageHandler
             'reply_markup' => json_encode([
                 'inline_keyboard' => [
                     [
-                        ['text' => $lang === 'fa' ? '💸 هزینه' : '💸 Expense',  'callback_data' => 'txn_filter:expense'],
-                        ['text' => $lang === 'fa' ? '💰 درآمد' : '💰 Income',   'callback_data' => 'txn_filter:income'],
-                        ['text' => $lang === 'fa' ? '🔄 انتقال' : '🔄 Transfer', 'callback_data' => 'txn_filter:transfer'],
+                        ['text' => __('bot.btn_expense'),  'callback_data' => 'txn_filter:expense'],
+                        ['text' => __('bot.btn_income'),   'callback_data' => 'txn_filter:income'],
+                        ['text' => __('bot.btn_transfer'), 'callback_data' => 'txn_filter:transfer'],
                     ],
                     [
                         ['text' => $lang === 'fa' ? '➕ افزودن تراکنش' : '➕ Add Transaction', 'callback_data' => 'txn:start'],
@@ -239,9 +239,9 @@ class MessageHandler
         if ($accounts->isEmpty()) {
             Telegram::sendMessage([
                 'chat_id'      => $chatId,
-                'text'         => $user->language === 'fa' ? 'هنوز حساب فعالی ندارید.' : 'You have no active accounts yet.',
+                'text'         => __('bot.account_none'),
                 'reply_markup' => json_encode(['inline_keyboard' => [[
-                    ['text' => '➕ ' . ($user->language === 'fa' ? 'افزودن حساب' : 'Add Account'), 'callback_data' => 'account:add'],
+                    ['text' => __('bot.btn_add_account'), 'callback_data' => 'account:add'],
                 ]]]),
             ]);
             return;

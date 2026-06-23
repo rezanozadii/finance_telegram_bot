@@ -17,7 +17,7 @@ class GoalKeyboard
             ];
         }
 
-        $buttons[] = [['text' => '➕ Add Goal', 'callback_data' => 'goal:add']];
+        $buttons[] = [['text' => __('bot.btn_add_goal'), 'callback_data' => 'goal:add']];
 
         return ['inline_keyboard' => $buttons];
     }

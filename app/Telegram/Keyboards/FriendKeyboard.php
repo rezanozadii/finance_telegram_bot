@@ -12,13 +12,12 @@ class FriendKeyboard
     {
         return [
             'inline_keyboard' => [[
-                ['text' => '✅ Accept',  'callback_data' => "friend_accept:{$friendship->id}"],
-                ['text' => '❌ Decline', 'callback_data' => "friend_decline:{$friendship->id}"],
+                ['text' => __('bot.btn_accept'),  'callback_data' => "friend_accept:{$friendship->id}"],
+                ['text' => __('bot.btn_decline'), 'callback_data' => "friend_decline:{$friendship->id}"],
             ]],
         ];
     }
 
-    /** Friend list for the /friends hub. */
     public static function friendList(Collection $friends, bool $hasPending): array
     {
         $rows = $friends->map(fn (User $f) => [[
@@ -26,35 +25,33 @@ class FriendKeyboard
             'callback_data' => "friend_view:{$f->id}",
         ]])->values()->toArray();
 
-        $footer = [['text' => '➕ Add Friend', 'callback_data' => 'friend:add']];
+        $footer = [['text' => __('bot.btn_add_friend'), 'callback_data' => 'friend:add']];
         if ($hasPending) {
-            $footer[] = ['text' => '🔔 Requests', 'callback_data' => 'friend:requests'];
+            $footer[] = ['text' => __('bot.btn_friend_requests'), 'callback_data' => 'friend:requests'];
         }
         $rows[] = $footer;
 
         return ['inline_keyboard' => $rows];
     }
 
-    /** Per-friend action menu. */
     public static function friendActions(User $friend): array
     {
         return [
             'inline_keyboard' => [
-                [['text' => '💸 Log Shared Expense', 'callback_data' => "friend_expense:{$friend->id}"]],
-                [['text' => '✅ Settle Up',           'callback_data' => "friend_settle:{$friend->id}"]],
-                [['text' => '« Back',                 'callback_data' => 'friend:list']],
+                [['text' => __('bot.btn_log_expense'), 'callback_data' => "friend_expense:{$friend->id}"]],
+                [['text' => __('bot.btn_settle_up'),   'callback_data' => "friend_settle:{$friend->id}"]],
+                [['text' => __('bot.btn_back'),         'callback_data' => 'friend:list']],
             ],
         ];
     }
 
-    /** Who paid? selector during shared expense creation. */
     public static function payerSelector(User $friend): array
     {
         return [
             'inline_keyboard' => [
-                [['text' => '🙋 I paid',            'callback_data' => 'friend_payer:me']],
-                [['text' => "🙋 {$friend->display_name} paid", 'callback_data' => 'friend_payer:them']],
-                [['text' => '❌ Cancel',             'callback_data' => 'friend:cancel_expense']],
+                [['text' => __('bot.btn_i_paid'),                                            'callback_data' => 'friend_payer:me']],
+                [['text' => __('bot.btn_they_paid', ['name' => $friend->display_name]),      'callback_data' => 'friend_payer:them']],
+                [['text' => __('bot.btn_cancel'),                                            'callback_data' => 'friend:cancel_expense']],
             ],
         ];
     }
@@ -63,8 +60,8 @@ class FriendKeyboard
     {
         return [
             'inline_keyboard' => [[
-                ['text' => '⏭ Skip note', 'callback_data' => 'friend_expense_note:skip'],
-                ['text' => '❌ Cancel',    'callback_data' => 'friend:cancel_expense'],
+                ['text' => __('bot.btn_skip_note'), 'callback_data' => 'friend_expense_note:skip'],
+                ['text' => __('bot.btn_cancel'),    'callback_data' => 'friend:cancel_expense'],
             ]],
         ];
     }
@@ -73,8 +70,8 @@ class FriendKeyboard
     {
         return [
             'inline_keyboard' => [[
-                ['text' => '✅ Confirm', 'callback_data' => 'friend_expense:confirm'],
-                ['text' => '❌ Cancel',  'callback_data' => 'friend:cancel_expense'],
+                ['text' => __('bot.btn_confirm'), 'callback_data' => 'friend_expense:confirm'],
+                ['text' => __('bot.btn_cancel'),  'callback_data' => 'friend:cancel_expense'],
             ]],
         ];
     }
@@ -83,8 +80,8 @@ class FriendKeyboard
     {
         return [
             'inline_keyboard' => [[
-                ['text' => '✅ Settle up', 'callback_data' => "friend_settle_confirm:{$friend->id}"],
-                ['text' => '❌ Cancel',    'callback_data' => "friend_view:{$friend->id}"],
+                ['text' => __('bot.btn_settle_confirm'), 'callback_data' => "friend_settle_confirm:{$friend->id}"],
+                ['text' => __('bot.btn_cancel'),          'callback_data' => "friend_view:{$friend->id}"],
             ]],
         ];
     }
@@ -92,11 +89,13 @@ class FriendKeyboard
     public static function pendingRequests(Collection $friendships): array
     {
         $rows = $friendships->map(fn (Friendship $f) => [[
-            'text'          => ($f->user->username ? '@' . $f->user->username : $f->user->display_name) . ' wants to be friends',
+            'text'          => __('bot.btn_wants_friends', [
+                'name' => $f->user->username ? '@' . $f->user->username : $f->user->display_name,
+            ]),
             'callback_data' => "friend_request_view:{$f->id}",
         ]])->values()->toArray();
 
-        $rows[] = [['text' => '« Back', 'callback_data' => 'friend:list']];
+        $rows[] = [['text' => __('bot.btn_back'), 'callback_data' => 'friend:list']];
 
         return ['inline_keyboard' => $rows];
     }

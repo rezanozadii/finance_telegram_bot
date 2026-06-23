@@ -11,8 +11,8 @@ class CategoryKeyboard
     {
         return [
             'inline_keyboard' => [[
-                ['text' => '💸 Expense', 'callback_data' => 'category_type:expense'],
-                ['text' => '💰 Income',  'callback_data' => 'category_type:income'],
+                ['text' => __('bot.btn_expense'), 'callback_data' => 'category_type:expense'],
+                ['text' => __('bot.btn_income'),  'callback_data' => 'category_type:income'],
             ]],
         ];
     }
@@ -21,7 +21,7 @@ class CategoryKeyboard
     {
         return [
             'inline_keyboard' => [[
-                ['text' => '⏭ Skip (no icon)', 'callback_data' => 'category_icon:skip'],
+                ['text' => __('bot.btn_skip_icon'), 'callback_data' => 'category_icon:skip'],
             ]],
         ];
     }
@@ -32,12 +32,11 @@ class CategoryKeyboard
             ['text' => ($c->icon ? $c->icon . ' ' : '') . $c->name, 'callback_data' => "category_parent:{$c->id}"],
         ])->values()->toArray();
 
-        $rows[] = [['text' => '— None (top-level)', 'callback_data' => 'category_parent:none']];
+        $rows[] = [['text' => __('bot.btn_no_parent'), 'callback_data' => 'category_parent:none']];
 
         return ['inline_keyboard' => $rows];
     }
 
-    /** Two-column grid of all user categories for the manage screen. */
     public static function manageGrid(Collection $categories): array
     {
         $buttons = $categories->map(fn (Category $c) => [
@@ -45,29 +44,26 @@ class CategoryKeyboard
             'callback_data' => "category_edit:{$c->id}",
         ])->values()->toArray();
 
-        // Chunk into rows of 2
         $rows   = array_chunk($buttons, 2);
-        $rows[] = [['text' => '« Back', 'callback_data' => 'category:list']];
+        $rows[] = [['text' => __('bot.btn_back'), 'callback_data' => 'category:list']];
 
         return ['inline_keyboard' => $rows];
     }
 
     public static function categoryActions(Category $category, bool $canDelete): array
     {
-        $label = ($category->icon ? $category->icon . ' ' : '') . $category->name;
-
         $actionRow = [
-            ['text' => '✏️ Rename',       'callback_data' => "category_rename:{$category->id}"],
-            ['text' => '🎨 Change Icon',  'callback_data' => "category_icon_edit:{$category->id}"],
+            ['text' => __('bot.btn_rename'),      'callback_data' => "category_rename:{$category->id}"],
+            ['text' => __('bot.btn_change_icon'), 'callback_data' => "category_icon_edit:{$category->id}"],
         ];
 
         $rows = [$actionRow];
 
         if ($canDelete) {
-            $rows[] = [['text' => '🗑 Delete',  'callback_data' => "category_delete:{$category->id}"]];
+            $rows[] = [['text' => __('bot.btn_delete'), 'callback_data' => "category_delete:{$category->id}"]];
         }
 
-        $rows[] = [['text' => '« Back to list', 'callback_data' => 'category:manage']];
+        $rows[] = [['text' => __('bot.btn_back_list'), 'callback_data' => 'category:manage']];
 
         return ['inline_keyboard' => $rows];
     }
@@ -76,8 +72,8 @@ class CategoryKeyboard
     {
         return [
             'inline_keyboard' => [[
-                ['text' => '✅ Yes, delete',   'callback_data' => "category_delete_confirm:{$category->id}"],
-                ['text' => '❌ Cancel',         'callback_data' => "category_edit:{$category->id}"],
+                ['text' => __('bot.btn_confirm_delete'), 'callback_data' => "category_delete_confirm:{$category->id}"],
+                ['text' => __('bot.btn_cancel'),          'callback_data' => "category_edit:{$category->id}"],
             ]],
         ];
     }
@@ -86,8 +82,8 @@ class CategoryKeyboard
     {
         return [
             'inline_keyboard' => [[
-                ['text' => '➕ Add Category', 'callback_data' => 'category:add'],
-                ['text' => '✏️ Manage',       'callback_data' => 'category:manage'],
+                ['text' => __('bot.btn_add_category'), 'callback_data' => 'category:add'],
+                ['text' => __('bot.btn_manage'),       'callback_data' => 'category:manage'],
             ]],
         ];
     }

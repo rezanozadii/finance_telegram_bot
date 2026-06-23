@@ -12,13 +12,13 @@ class AccountKeyboard
         return [
             'inline_keyboard' => [
                 [
-                    ['text' => '💵 Cash',     'callback_data' => 'account_type:cash'],
-                    ['text' => '💳 Card',     'callback_data' => 'account_type:card'],
-                    ['text' => '🏦 Bank',     'callback_data' => 'account_type:bank'],
+                    ['text' => __('bot.btn_type_cash'),    'callback_data' => 'account_type:cash'],
+                    ['text' => __('bot.btn_type_card'),    'callback_data' => 'account_type:card'],
+                    ['text' => __('bot.btn_type_bank'),    'callback_data' => 'account_type:bank'],
                 ],
                 [
-                    ['text' => '📱 E-Wallet', 'callback_data' => 'account_type:e-wallet'],
-                    ['text' => '💸 Credit',   'callback_data' => 'account_type:credit'],
+                    ['text' => __('bot.btn_type_ewallet'), 'callback_data' => 'account_type:e-wallet'],
+                    ['text' => __('bot.btn_type_credit'),  'callback_data' => 'account_type:credit'],
                 ],
             ],
         ];
@@ -30,7 +30,7 @@ class AccountKeyboard
             ['text' => "✏️ {$a->name}", 'callback_data' => "account_edit:{$a->id}"],
         ])->values()->toArray();
 
-        $rows[] = [['text' => '➕ Add Account', 'callback_data' => 'account:add']];
+        $rows[] = [['text' => __('bot.btn_add_account'), 'callback_data' => 'account:add']];
 
         return ['inline_keyboard' => $rows];
     }
@@ -40,11 +40,11 @@ class AccountKeyboard
         return [
             'inline_keyboard' => [
                 [
-                    ['text' => '✏️ Rename',  'callback_data' => "account_rename:{$account->id}"],
-                    ['text' => '🗃 Archive', 'callback_data' => "account_archive:{$account->id}"],
+                    ['text' => __('bot.btn_rename'),  'callback_data' => "account_rename:{$account->id}"],
+                    ['text' => __('bot.btn_archive'), 'callback_data' => "account_archive:{$account->id}"],
                 ],
                 [
-                    ['text' => '« Back to Accounts', 'callback_data' => 'account:list'],
+                    ['text' => __('bot.btn_back_accounts'), 'callback_data' => 'account:list'],
                 ],
             ],
         ];
@@ -54,8 +54,8 @@ class AccountKeyboard
     {
         return [
             'inline_keyboard' => [[
-                ['text' => '✅ Yes, archive', 'callback_data' => "account_archive_confirm:{$account->id}"],
-                ['text' => '❌ Cancel',        'callback_data' => "account_edit:{$account->id}"],
+                ['text' => __('bot.btn_confirm_archive'), 'callback_data' => "account_archive_confirm:{$account->id}"],
+                ['text' => __('bot.btn_cancel'),          'callback_data' => "account_edit:{$account->id}"],
             ]],
         ];
     }

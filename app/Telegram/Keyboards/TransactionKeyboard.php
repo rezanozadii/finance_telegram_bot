@@ -13,11 +13,11 @@ class TransactionKeyboard
         return [
             'inline_keyboard' => [
                 [
-                    ['text' => '💸 Expense',  'callback_data' => 'txn_type:expense'],
-                    ['text' => '💰 Income',   'callback_data' => 'txn_type:income'],
+                    ['text' => __('bot.btn_expense'),  'callback_data' => 'txn_type:expense'],
+                    ['text' => __('bot.btn_income'),   'callback_data' => 'txn_type:income'],
                 ],
                 [
-                    ['text' => '🔄 Transfer', 'callback_data' => 'txn_type:transfer'],
+                    ['text' => __('bot.btn_transfer'), 'callback_data' => 'txn_type:transfer'],
                 ],
             ],
         ];
@@ -30,7 +30,7 @@ class TransactionKeyboard
             'callback_data' => "{$callbackPrefix}:{$a->id}",
         ]])->values()->toArray();
 
-        $rows[] = [['text' => '❌ Cancel', 'callback_data' => 'txn:cancel']];
+        $rows[] = [['text' => __('bot.btn_cancel'), 'callback_data' => 'txn:cancel']];
 
         return ['inline_keyboard' => $rows];
     }
@@ -43,7 +43,7 @@ class TransactionKeyboard
         ])->values()->toArray();
 
         $rows   = array_chunk($buttons, 2);
-        $rows[] = [['text' => '❌ Cancel', 'callback_data' => 'txn:cancel']];
+        $rows[] = [['text' => __('bot.btn_cancel'), 'callback_data' => 'txn:cancel']];
 
         return ['inline_keyboard' => $rows];
     }
@@ -52,8 +52,8 @@ class TransactionKeyboard
     {
         return [
             'inline_keyboard' => [[
-                ['text' => '⏭ Skip note', 'callback_data' => 'txn_note:skip'],
-                ['text' => '❌ Cancel',    'callback_data' => 'txn:cancel'],
+                ['text' => __('bot.btn_skip_note'), 'callback_data' => 'txn_note:skip'],
+                ['text' => __('bot.btn_cancel'),    'callback_data' => 'txn:cancel'],
             ]],
         ];
     }
@@ -62,8 +62,8 @@ class TransactionKeyboard
     {
         return [
             'inline_keyboard' => [[
-                ['text' => '✅ Confirm', 'callback_data' => 'txn:confirm'],
-                ['text' => '❌ Cancel',  'callback_data' => 'txn:cancel'],
+                ['text' => __('bot.btn_confirm'), 'callback_data' => 'txn:confirm'],
+                ['text' => __('bot.btn_cancel'),  'callback_data' => 'txn:cancel'],
             ]],
         ];
     }
@@ -75,12 +75,12 @@ class TransactionKeyboard
         return [
             'inline_keyboard' => [
                 [
-                    ['text' => '✅ Confirm', 'callback_data' => 'ai_txn:confirm'],
-                    ['text' => '❌ Cancel',  'callback_data' => 'ai_txn:cancel'],
+                    ['text' => __('bot.btn_confirm'),        'callback_data' => 'ai_txn:confirm'],
+                    ['text' => __('bot.btn_cancel'),         'callback_data' => 'ai_txn:cancel'],
                 ],
                 [
-                    ['text' => '✏️ Category', 'callback_data' => 'ai_txn:change_category'],
-                    ['text' => '✏️ Account',  'callback_data' => 'ai_txn:change_account'],
+                    ['text' => __('bot.btn_edit_category'), 'callback_data' => 'ai_txn:change_category'],
+                    ['text' => __('bot.btn_edit_account'),  'callback_data' => 'ai_txn:change_account'],
                 ],
             ],
         ];
@@ -94,7 +94,7 @@ class TransactionKeyboard
         ])->values()->toArray();
 
         $rows   = array_chunk($buttons, 2);
-        $rows[] = [['text' => '« Back', 'callback_data' => 'ai_txn:back_to_preview']];
+        $rows[] = [['text' => __('bot.btn_back'), 'callback_data' => 'ai_txn:back_to_preview']];
 
         return ['inline_keyboard' => $rows];
     }
@@ -106,7 +106,7 @@ class TransactionKeyboard
             'callback_data' => "ai_txn_account:{$a->id}",
         ]])->values()->toArray();
 
-        $rows[] = [['text' => '« Back', 'callback_data' => 'ai_txn:back_to_preview']];
+        $rows[] = [['text' => __('bot.btn_back'), 'callback_data' => 'ai_txn:back_to_preview']];
 
         return ['inline_keyboard' => $rows];
     }

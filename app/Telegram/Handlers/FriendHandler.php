@@ -72,9 +72,9 @@ class FriendHandler
         $pending  = $this->friendService->getIncomingRequests($user);
 
         if ($friends->isEmpty() && $pending->isEmpty()) {
-            $text = "👥 *Friends*\n\nYou have no friends on the bot yet.\nSend their username with /addfriend or tap Add Friend.";
+            $text = __('bot.friend_no_friends');
         } else {
-            $lines = ["👥 *Friends* ({$friends->count()})\n"];
+            $lines = [__('bot.friend_list_title', ['count' => $friends->count()]) . "\n"];
             foreach ($friends as $f) {
                 $balances    = $this->friendService->getBalance($user, $f);
                 $balanceStr  = $this->formatBalances($balances);
@@ -82,7 +82,7 @@ class FriendHandler
                 $lines[]     = "{$name} · {$balanceStr}";
             }
             if ($pending->isNotEmpty()) {
-                $lines[] = "\n🔔 {$pending->count()} pending friend request(s)";
+                $lines[] = "\n" . __('bot.friend_pending_title', ['count' => $pending->count()]);
             }
             $text = implode("\n", $lines);
         }
