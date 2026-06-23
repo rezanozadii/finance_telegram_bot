@@ -156,10 +156,10 @@ function AppInner() {
           </button>
         </div>
 
-        {/* Scrollable content */}
+        {/* Scrollable content — overflow:hidden when AI chat is open so chat handles its own scroll */}
         <div style={{
           flex: 1,
-          overflowY: 'auto',
+          overflowY: tab === 'ai' && aiPage === 'chat' ? 'hidden' : 'auto',
           overflowX: 'hidden',
           WebkitOverflowScrolling: 'touch',
         }}>

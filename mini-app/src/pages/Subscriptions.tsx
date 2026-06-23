@@ -33,7 +33,7 @@ export function Subscriptions(_props: { onBack?: () => void }) {
   return (
     <List>
       {subs.length > 0 && (
-        <Section header="Summary">
+        <Section header={t('summary')}>
           <Cell
             before={<span style={{ fontSize: 22 }}>📅</span>}
             after={<Text style={{ color: '#ff3b30', fontWeight: 600 }}>{fmt(totalMonthly, currency)}</Text>}

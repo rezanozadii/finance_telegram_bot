@@ -62,7 +62,7 @@ function AddBudgetModal({ onClose, onSave, categories }: ModalProps) {
       ))}
 
       <div style={{ marginBottom: 14 }}>
-        <label style={{ fontSize: 13, color: '#888', display: 'block', marginBottom: 4 }}>Currency</label>
+        <label style={{ fontSize: 13, color: '#888', display: 'block', marginBottom: 4 }}>{t('currency')}</label>
         <input value={currency} onChange={(e) => setCurrency(e.target.value.toUpperCase())} maxLength={3} style={inputStyle} />
       </div>
 
@@ -77,9 +77,9 @@ function AddBudgetModal({ onClose, onSave, categories }: ModalProps) {
 
       {categories.length > 0 && (
         <div style={{ marginBottom: 20 }}>
-          <label style={{ fontSize: 13, color: '#888', display: 'block', marginBottom: 4 }}>Category (optional)</label>
+          <label style={{ fontSize: 13, color: '#888', display: 'block', marginBottom: 4 }}>{t('category_optional')}</label>
           <select value={categoryId ?? ''} onChange={(e) => setCategoryId(e.target.value ? Number(e.target.value) : undefined)} style={{ ...inputStyle, appearance: 'auto' }}>
-            <option value="">— None —</option>
+            <option value="">{t('none_option')}</option>
             {categories.filter(c => c.type === 'expense').map((c) => (
               <option key={c.id} value={c.id}>{c.icon ? `${c.icon} ` : ''}{c.name}</option>
             ))}

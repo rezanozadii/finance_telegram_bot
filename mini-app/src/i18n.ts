@@ -180,6 +180,14 @@ const en = {
   months_now: 'Months now',
   months_after: 'Months after',
   no_result: 'Run a simulation to see results',
+
+  // Shared form labels
+  currency: 'Currency',
+  category_optional: 'Category (optional)',
+  none_option: '— None —',
+  ai_welcome: 'Ask me anything about your finances',
+  results: 'Results',
+  summary: 'Summary',
 } as const;
 
 const fa: Record<keyof typeof en, string> = {
@@ -362,6 +370,14 @@ const fa: Record<keyof typeof en, string> = {
   months_now: 'ماه اکنون',
   months_after: 'ماه پس از',
   no_result: 'یک سناریو اجرا کنید',
+
+  // Shared form labels
+  currency: 'ارز',
+  category_optional: 'دسته‌بندی (اختیاری)',
+  none_option: '— هیچ‌کدام —',
+  ai_welcome: 'هر سوالی درباره امور مالی خود بپرسید',
+  results: 'نتایج',
+  summary: 'خلاصه',
 };
 
 export const i18n: Record<Lang, Record<keyof typeof en, string>> = { en, fa };

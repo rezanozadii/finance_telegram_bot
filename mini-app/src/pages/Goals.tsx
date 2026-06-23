@@ -63,7 +63,7 @@ function AddGoalModal({ onClose, onSave }: ModalProps) {
         </div>
       ))}
       <div style={{ marginBottom: 20 }}>
-        <label style={{ fontSize: 13, color: '#888', display: 'block', marginBottom: 4 }}>Currency</label>
+        <label style={{ fontSize: 13, color: '#888', display: 'block', marginBottom: 4 }}>{t('currency')}</label>
         <input value={currency} onChange={(e) => setCurrency(e.target.value.toUpperCase())} maxLength={3} style={inputStyle} />
       </div>
       <button onClick={submit} disabled={saving || !name || !amount} style={btnStyle}>

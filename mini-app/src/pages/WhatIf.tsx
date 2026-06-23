@@ -101,7 +101,7 @@ export function WhatIf({ onBack, defaultCurrency = 'USD' }: Props) {
       </Section>
 
       {result && !result.error && (
-        <Section header="Results">
+        <Section header={t('results')}>
           {result.monthly_savings !== undefined && (
             <Cell after={<span style={{ color: '#34c759', fontWeight: 600 }}>{fmt(result.monthly_savings, currency)}</span>}>
               {t('monthly_savings')}

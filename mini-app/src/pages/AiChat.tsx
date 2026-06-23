@@ -41,12 +41,12 @@ export function AiChat({ defaultCurrency = 'USD' }: Props) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100dvh - 130px)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         {messages.length === 0 && (
           <div style={{ textAlign: 'center', color: '#888', marginTop: 40 }}>
             <div style={{ fontSize: 48, marginBottom: 12 }}>🤖</div>
-            <div>Ask me anything about your finances</div>
+            <div>{t('ai_welcome')}</div>
           </div>
         )}
         {messages.map((msg, i) => (
