@@ -21,8 +21,9 @@ import { Habits } from './pages/Habits';
 import { WhatIf } from './pages/WhatIf';
 import { api } from './api/client';
 import type { AiPage, DashPage, Me } from './types';
+import type { Lang } from './i18n';
 
-const AI_PAGE_TITLES: Record<AiPage, string> = {
+const AI_PAGE_TITLES_EN: Record<AiPage, string> = {
   hub:           '',
   chat:          'AI Chat',
   health:        'Health Score',
@@ -35,12 +36,34 @@ const AI_PAGE_TITLES: Record<AiPage, string> = {
   whatif:        'What-If Simulator',
 };
 
+const AI_PAGE_TITLES_FA: Record<AiPage, string> = {
+  hub:           '',
+  chat:          'چت هوشمند',
+  health:        'امتیاز سلامت',
+  goals:         'اهداف',
+  budgets:       'بودجه‌ها',
+  forecast:      'پیش‌بینی',
+  subscriptions: 'اشتراک‌ها',
+  insights:      'بینش‌های روزانه',
+  habits:        'عادات هزینه‌ای',
+  whatif:        'شبیه‌ساز فرضی',
+};
+
+// Detect initial language immediately from Telegram initData (before API call)
+function detectInitialLang(): Lang {
+  try {
+    const tgLang = window.Telegram?.WebApp?.initDataUnsafe?.user?.language_code ?? '';
+    if (tgLang.startsWith('fa') || tgLang === 'ir') return 'fa';
+  } catch { /* ignore */ }
+  return 'en';
+}
+
 function AppInner() {
-  const [tab, setTab] = useState<Tab>('dashboard');
-  const [aiPage, setAiPage] = useState<AiPage>('hub');
+  const [tab, setTab]         = useState<Tab>('dashboard');
+  const [aiPage, setAiPage]   = useState<AiPage>('hub');
   const [dashPage, setDashPage] = useState<DashPage>('main');
-  const [me, setMe] = useState<Me | null>(null);
-  const { setLang, dir } = useLang();
+  const [me, setMe]           = useState<Me | null>(null);
+  const { lang, setLang, t, dir } = useLang();
 
   const platform = typeof window !== 'undefined' &&
     /iphone|ipad|mac/i.test(navigator.userAgent) ? 'ios' : 'base';
@@ -48,7 +71,9 @@ function AppInner() {
   useEffect(() => {
     api.me().then((data) => {
       setMe(data);
-      if (data.language === 'fa') setLang('fa');
+      if (data.language === 'fa' || data.language === 'en') {
+        setLang(data.language as Lang);
+      }
     }).catch(() => {});
   }, []);
 
@@ -58,26 +83,92 @@ function AppInner() {
     if (newTab === 'ai') setAiPage('hub');
   }
 
+  function toggleLang() {
+    const next: Lang = lang === 'en' ? 'fa' : 'en';
+    setLang(next);
+    const newCurrency = next === 'fa' ? 'IRR' : 'USD';
+    setMe((prev) => prev ? { ...prev, language: next, default_currency: newCurrency } : prev);
+    api.updateMe({ language: next }).catch(() => {});
+  }
+
   const currency = me?.default_currency ?? 'USD';
+  const aiTitles = lang === 'fa' ? AI_PAGE_TITLES_FA : AI_PAGE_TITLES_EN;
+
+  const showAiBack = tab === 'ai' && aiPage !== 'hub';
 
   return (
     <AppRoot platform={platform}>
-      <div dir={dir} style={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 80 }}>
+      <div
+        dir={dir}
+        style={{
+          height: '100dvh',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          background: 'var(--tg-theme-bg-color, #fff)',
+        }}
+      >
+        {/* Persistent top bar: language toggle + AI sub-page title */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '8px 16px',
+          borderBottom: '1px solid var(--tg-theme-hint-color, #e0e0e0)',
+          background: 'var(--tg-theme-bg-color, #fff)',
+          minHeight: 44,
+          flexShrink: 0,
+        }}>
+          {showAiBack ? (
+            <button
+              onClick={() => setAiPage('hub')}
+              style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#007aff', padding: 0 }}
+            >
+              {dir === 'rtl' ? '→' : '←'}
+            </button>
+          ) : (
+            <span style={{ fontWeight: 700, fontSize: 16 }}>
+              {lang === 'fa' ? '💰 مدیریت مالی' : '💰 Finance'}
+            </span>
+          )}
+
+          {showAiBack && (
+            <span style={{ fontWeight: 600, fontSize: 16 }}>{aiTitles[aiPage]}</span>
+          )}
+
+          <button
+            onClick={toggleLang}
+            style={{
+              background: 'none',
+              border: '1px solid var(--tg-theme-hint-color, #ccc)',
+              borderRadius: 14,
+              padding: '3px 10px',
+              cursor: 'pointer',
+              fontSize: 13,
+              fontWeight: 600,
+              color: 'var(--tg-theme-text-color, #333)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+            }}
+          >
+            {lang === 'fa' ? '🇮🇷 FA' : '🇬🇧 EN'}
+          </button>
+        </div>
+
+        {/* Scrollable content */}
+        <div style={{
+          flex: 1,
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          WebkitOverflowScrolling: 'touch',
+        }}>
           {tab !== 'ai' && (
             <>
-              {tab === 'dashboard' && dashPage === 'main' && (
-                <Dashboard onNavigate={setDashPage} />
-              )}
-              {tab === 'dashboard' && dashPage === 'accounts' && (
-                <Accounts onBack={() => setDashPage('main')} />
-              )}
-              {tab === 'dashboard' && dashPage === 'categories' && (
-                <Categories onBack={() => setDashPage('main')} />
-              )}
-              {tab === 'dashboard' && dashPage === 'settings' && (
-                <Settings onBack={() => setDashPage('main')} />
-              )}
+              {tab === 'dashboard' && dashPage === 'main'       && <Dashboard onNavigate={setDashPage} />}
+              {tab === 'dashboard' && dashPage === 'accounts'   && <Accounts onBack={() => setDashPage('main')} />}
+              {tab === 'dashboard' && dashPage === 'categories' && <Categories onBack={() => setDashPage('main')} />}
+              {tab === 'dashboard' && dashPage === 'settings'   && <Settings onBack={() => setDashPage('main')} />}
               {tab === 'transactions' && <Transactions />}
               {tab === 'report'       && <Report />}
               {tab === 'friends'      && <Friends />}
@@ -86,31 +177,6 @@ function AppInner() {
 
           {tab === 'ai' && (
             <>
-              {aiPage !== 'hub' && (
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 10,
-                  padding: '12px 16px',
-                  borderBottom: '1px solid var(--tg-theme-hint-color, #ddd)',
-                  background: 'var(--tg-theme-bg-color, #fff)',
-                  position: 'sticky',
-                  top: 0,
-                  zIndex: 50,
-                }}>
-                  <button
-                    onClick={() => setAiPage('hub')}
-                    style={{
-                      background: 'none', border: 'none', fontSize: 22,
-                      cursor: 'pointer', color: '#007aff', padding: 0, lineHeight: 1,
-                    }}
-                  >
-                    ←
-                  </button>
-                  <span style={{ fontWeight: 600, fontSize: 17 }}>{AI_PAGE_TITLES[aiPage]}</span>
-                </div>
-              )}
-
               {aiPage === 'hub'           && <AiHub onNavigate={setAiPage} />}
               {aiPage === 'chat'          && <AiChat onBack={() => setAiPage('hub')} defaultCurrency={currency} />}
               {aiPage === 'health'        && <HealthScore onBack={() => setAiPage('hub')} />}
@@ -125,7 +191,13 @@ function AppInner() {
           )}
         </div>
 
-        <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 100 }}>
+        {/* Fixed bottom navigation */}
+        <div style={{
+          flexShrink: 0,
+          borderTop: '1px solid var(--tg-theme-hint-color, #e0e0e0)',
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+          background: 'var(--tg-theme-bg-color, #fff)',
+        }}>
           <BottomNav active={tab} onChange={handleTabChange} />
         </div>
       </div>
@@ -134,8 +206,9 @@ function AppInner() {
 }
 
 export default function App() {
+  const initialLang = detectInitialLang();
   return (
-    <LangProvider>
+    <LangProvider initialLang={initialLang}>
       <AppInner />
     </LangProvider>
   );

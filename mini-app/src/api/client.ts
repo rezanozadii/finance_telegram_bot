@@ -81,9 +81,11 @@ export const api = {
 
   healthScore: () => request<HealthScore>('/ai/health-score'),
 
-  aiInsights: () => request<AiInsight[]>('/ai/insights'),
+  aiInsights: () =>
+    request<{ insights: AiInsight[] }>('/ai/insights').then((r) => r.insights ?? []),
 
-  aiSubscriptions: () => request<Subscription[]>('/ai/subscriptions'),
+  aiSubscriptions: () =>
+    request<{ subscriptions: Subscription[] }>('/ai/subscriptions').then((r) => r.subscriptions ?? []),
 
   goals: () => request<UserGoal[]>('/goals'),
 

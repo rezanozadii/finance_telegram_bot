@@ -39,7 +39,7 @@ class AiController extends Controller
         $insights = AiInsight::where('user_id', $user->id)
             ->whereDate('insights_date', Carbon::today())
             ->orderByDesc('created_at')
-            ->get(['type', 'content', 'insights_date', 'is_sent']);
+            ->get(['id', 'type', 'content', 'insights_date', 'is_sent']);
 
         return response()->json(['insights' => $insights]);
     }
