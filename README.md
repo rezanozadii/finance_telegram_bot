@@ -4,7 +4,7 @@
 
 A full-stack **AI-powered personal finance assistant** built as a Telegram bot + Mini App. Track income and expenses, manage accounts, split costs with friends, and get intelligent coaching from a built-in AI Financial Advisor — all inside Telegram.
 
-> **Latest:** v1.1.3 — Full bot UI with persistent menus, inline keyboards for every command, and mini-app pages for all features.
+> **Latest:** v1.2.4 — Complete bilingual support (EN/FA) across both the bot and mini app, full-screen layout fixes, and financial health score improvements.
 
 ---
 
@@ -371,6 +371,43 @@ All endpoints are under `/api/*` and require `Authorization: tma <initDataRaw>` 
 ---
 
 ## Changelog
+
+### v1.2.4
+- **Mini App:** API middleware (`TelegramInitDataAuth`) now sets `App::setLocale()` from the user's language, so all API responses respect the user's locale via `__()`
+- **Mini App:** Health Score page fixed — score number was invisible (API returned `score`, frontend expected `total`); personality string was blank (API returned grade letter, now returns translated personality label)
+- **Mini App:** All 8 Health Score component labels and explanations translated via `lang/en/health.php` and `lang/fa/health.php`
+- **Mini App:** Dashboard account type subtitle now shows translated label (نقدی, کارت, بانک…) instead of raw enum
+- **Mini App:** Dashboard transaction type fallback now shows translated label (هزینه, درآمد, انتقال…)
+
+### v1.2.3
+- **Bot:** Added 65 button-label translation keys covering every keyboard in the bot (`FriendKeyboard`, `TransactionKeyboard`, `AccountKeyboard`, `GoalKeyboard`, `BudgetKeyboard`, `RecurringKeyboard`, `CategoryKeyboard`)
+- **Bot:** All inline keyboard button labels now use `__('bot.*')` — Persian users see fully translated buttons throughout the entire bot flow
+- **Bot:** `FriendHandler::showList()` translated (friends list title, pending count, no-friends message)
+- **Bot:** `MessageHandler` balance and transaction menus translated (Add Friend/Friends buttons, Uncategorized label, type filter buttons)
+- **Bot:** Account menu "no accounts" state and Add Account button translated
+
+### v1.2.2
+- **Bot:** Fixed transaction summaries showing in English for Persian users — added 20 translation keys for transaction, shared expense, and recurring template summary labels
+- **Bot:** `TransactionHandler`, `AiTransactionHandler`, `FriendHandler`, `RecurringHandler` — all summary messages now use `__('bot.*')` keys
+- **Mini App:** Fixed Telegram close button overlapping UI after second iteration — `contentSafeAreaInset.top` is preferred; falls back to `safeAreaInset.top`; does not override CSS variable when both are 0 (lets `env(safe-area-inset-top)` handle iOS notch as fallback)
+
+### v1.2.1
+- **Mini App:** Fixed header pushed too far down in full-screen mode — `safeAreaInset.top` (device notch) was being double-counted on top of `contentSafeAreaInset.top` (Telegram overlay)
+
+### v1.2.0
+- **Mini App:** Fixed Telegram close/minimize button overlapping the top header in full-screen mode — top bar now uses `contentSafeAreaInset.top` padding
+- **Mini App:** Added `safeAreaChanged`, `contentSafeAreaChanged`, `viewportChanged` event listeners to keep safe area offsets in sync
+- **Mini App:** Added `TelegramSafeAreaInset` TypeScript declarations
+
+### v1.1.9
+- **Mini App:** Fixed full-screen layout — replaced `@telegram-apps/telegram-ui` `Tabbar` (uses `position: fixed`, overlaps content) with a custom flex-row bottom nav
+- **Mini App:** Fixed scroll not working in content area — `minHeight: 0` added to flex children (prevents the `min-height: auto` default from blocking `overflow: auto`)
+- **Mini App:** Root element uses `height: 100dvh` with `display: flex; flex-direction: column` for proper full-screen layout
+
+### v1.1.8
+- **Mini App:** Fixed "invalid data signature" / "session error" — `rawurldecode()` was replaced with `parse_str()` (correctly decodes `+` as space in Telegram's URL encoding)
+- **Mini App:** Fixed wrong config key for bot token (`config('services.telegram.bot_token')` → `config('telegram.bots.mybot.token')`)
+- **Mini App:** Extended auth window to 7 days (mini apps can stay open for long sessions)
 
 ### v1.1.3
 - Fixed language keyboard not switching to Persian (Reply Keyboard cannot be set via `editMessageText`)
