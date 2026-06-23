@@ -4,7 +4,6 @@ namespace App\Telegram\Commands;
 
 use App\Services\AccountService;
 use App\Services\UserService;
-use App\Telegram\Handlers\AccountHandler;
 use App\Telegram\Keyboards\MainKeyboard;
 use Illuminate\Support\Facades\App;
 use Telegram\Bot\Commands\Command;
@@ -22,39 +21,51 @@ class StartCommand extends Command
         $user     = app(UserService::class)->findOrCreate($from);
         $accounts = app(AccountService::class)->listActive($user);
         $lang     = $user->language ?? 'en';
+        $name     = $user->display_name;
 
         App::setLocale($lang);
 
-        if ($accounts->isEmpty()) {
-            $this->replyWithMessage([
-                'text' => __('bot.welcome_new', ['name' => $user->display_name]),
-            ]);
+        $isNew = $accounts->isEmpty();
 
-            app(AccountHandler::class)->startCreation($from->getId(), $chatId);
-            return;
-        }
-
-        // Send the persistent bottom keyboard first
+        // Always send the persistent bottom keyboard first so buttons appear immediately
         Telegram::sendMessage([
             'chat_id'      => $chatId,
             'text'         => $lang === 'fa'
-                ? "✅ منوی اصلی فعال شد. از دکمه‌های زیر استفاده کنید:"
-                : "✅ Main menu is ready. Use the buttons below:",
+                ? ($isNew ? "👋 خوش آمدی *{$name}*! من دستیار مالی شما هستم." : "👋 خوش برگشتی *{$name}*!")
+                : ($isNew ? "👋 Welcome, *{$name}*! I'm your personal finance assistant." : "👋 Welcome back, *{$name}*!"),
+            'parse_mode'   => 'Markdown',
             'reply_markup' => json_encode(MainKeyboard::main($lang)),
         ]);
 
-        // Then send the full feature menu as an inline keyboard
-        $name = $user->display_name;
-        $text = $lang === 'fa'
-            ? "👋 خوش برگشتی *{$name}*!\n\n💼 از منوی زیر یک بخش انتخاب کنید:"
-            : "👋 Welcome back, *{$name}*!\n\n💼 Choose a section from the menu below:";
+        // Always send the full feature inline menu
+        $menuText = $lang === 'fa'
+            ? "💼 از منوی زیر یک بخش انتخاب کنید:"
+            : "💼 Choose a section — all features are one tap away:";
 
         Telegram::sendMessage([
             'chat_id'      => $chatId,
-            'text'         => $text,
+            'text'         => $menuText,
             'parse_mode'   => 'Markdown',
             'reply_markup' => json_encode(self::fullMenu($lang)),
         ]);
+
+        // For new users, additionally guide them to create their first account
+        if ($isNew) {
+            $hint = $lang === 'fa'
+                ? "🏦 برای شروع، ابتدا یک حساب بسازید.\nروی *🏦 حساب‌ها* بزنید یا /accounts را ارسال کنید."
+                : "🏦 To get started, create your first account.\nTap *🏦 Accounts* above or send /accounts.";
+
+            Telegram::sendMessage([
+                'chat_id'    => $chatId,
+                'text'       => $hint,
+                'parse_mode' => 'Markdown',
+                'reply_markup' => json_encode([
+                    'inline_keyboard' => [[
+                        ['text' => $lang === 'fa' ? '🏦 ایجاد حساب' : '🏦 Create Account', 'callback_data' => 'account:add'],
+                    ]],
+                ]),
+            ]);
+        }
     }
 
     public static function fullMenu(string $lang = 'en'): array
@@ -63,40 +74,36 @@ class StartCommand extends Command
             return [
                 'inline_keyboard' => [
                     [
-                        ['text' => '➕ افزودن تراکنش',  'callback_data' => 'txn:start'],
-                        ['text' => '📋 تراکنش‌ها',      'callback_data' => 'txn_filter:all'],
+                        ['text' => '➕ افزودن تراکنش',     'callback_data' => 'txn:start'],
+                        ['text' => '📋 تراکنش‌ها',         'callback_data' => 'txn_filter:all'],
                     ],
                     [
-                        ['text' => '🏦 حساب‌ها',        'callback_data' => 'account:list'],
-                        ['text' => '📂 دسته‌بندی‌ها',   'callback_data' => 'settings:categories'],
+                        ['text' => '🏦 حساب‌ها',           'callback_data' => 'account:list'],
+                        ['text' => '📂 دسته‌بندی‌ها',      'callback_data' => 'settings:categories'],
                     ],
                     [
-                        ['text' => '📊 گزارش ماهانه',   'callback_data' => 'report:month'],
-                        ['text' => '📈 گزارش سالانه',   'callback_data' => 'report:year'],
+                        ['text' => '📊 گزارش ماهانه',      'callback_data' => 'report:month'],
+                        ['text' => '📈 گزارش سالانه',      'callback_data' => 'report:year'],
                     ],
                     [
-                        ['text' => '🎯 اهداف',          'callback_data' => 'goal:list'],
-                        ['text' => '💼 بودجه‌ها',       'callback_data' => 'budget:list'],
+                        ['text' => '🎯 اهداف',             'callback_data' => 'goal:list'],
+                        ['text' => '💼 بودجه‌ها',          'callback_data' => 'budget:list'],
                     ],
                     [
-                        ['text' => '👥 دوستان',         'callback_data' => 'friend:list'],
-                        ['text' => '💰 موجودی',         'callback_data' => 'friend:list'],
+                        ['text' => '👥 دوستان',            'callback_data' => 'friend:list'],
+                        ['text' => '🔄 تراکنش‌های تکرار',  'callback_data' => 'settings:recurring'],
                     ],
                     [
-                        ['text' => '🔄 تراکنش‌های تکرار', 'callback_data' => 'settings:recurring'],
-                        ['text' => '🌐 زبان',            'callback_data' => 'settings:language'],
+                        ['text' => '❤️ سلامت مالی',        'callback_data' => 'settings:health'],
+                        ['text' => '💡 بینش‌های روزانه',   'callback_data' => 'settings:insights'],
                     ],
                     [
-                        ['text' => '❤️ سلامت مالی',     'callback_data' => 'settings:health'],
-                        ['text' => '💡 بینش‌های روزانه', 'callback_data' => 'settings:insights'],
+                        ['text' => '🏋️ مشاوره مالی',      'callback_data' => 'settings:coach'],
+                        ['text' => '🤖 چت هوش مصنوعی',    'callback_data' => 'ai:start_chat'],
                     ],
                     [
-                        ['text' => '🏋️ مشاوره مالی',    'callback_data' => 'settings:coach'],
-                        ['text' => '🤖 چت هوش مصنوعی',  'callback_data' => 'ai:start_chat'],
-                    ],
-                    [
-                        ['text' => '🔄 اشتراک‌ها',      'callback_data' => 'ai:subscriptions'],
-                        ['text' => '⚙️ تنظیمات',        'callback_data' => 'settings:menu'],
+                        ['text' => '🔄 اشتراک‌ها',         'callback_data' => 'ai:subscriptions'],
+                        ['text' => '🌐 زبان',              'callback_data' => 'settings:language'],
                     ],
                 ],
             ];
@@ -105,40 +112,36 @@ class StartCommand extends Command
         return [
             'inline_keyboard' => [
                 [
-                    ['text' => '➕ Add Transaction',   'callback_data' => 'txn:start'],
-                    ['text' => '📋 Transactions',      'callback_data' => 'txn_filter:all'],
+                    ['text' => '➕ Add Transaction',    'callback_data' => 'txn:start'],
+                    ['text' => '📋 Transactions',       'callback_data' => 'txn_filter:all'],
                 ],
                 [
-                    ['text' => '🏦 Accounts',          'callback_data' => 'account:list'],
-                    ['text' => '📂 Categories',         'callback_data' => 'settings:categories'],
+                    ['text' => '🏦 Accounts',           'callback_data' => 'account:list'],
+                    ['text' => '📂 Categories',          'callback_data' => 'settings:categories'],
                 ],
                 [
-                    ['text' => '📊 Monthly Report',    'callback_data' => 'report:month'],
-                    ['text' => '📈 Yearly Report',     'callback_data' => 'report:year'],
+                    ['text' => '📊 Monthly Report',     'callback_data' => 'report:month'],
+                    ['text' => '📈 Yearly Report',      'callback_data' => 'report:year'],
                 ],
                 [
-                    ['text' => '🎯 Goals',             'callback_data' => 'goal:list'],
-                    ['text' => '💼 Budgets',            'callback_data' => 'budget:list'],
+                    ['text' => '🎯 Goals',              'callback_data' => 'goal:list'],
+                    ['text' => '💼 Budgets',             'callback_data' => 'budget:list'],
                 ],
                 [
-                    ['text' => '👥 Friends',           'callback_data' => 'friend:list'],
-                    ['text' => '💰 Balances',          'callback_data' => 'friend:list'],
+                    ['text' => '👥 Friends',            'callback_data' => 'friend:list'],
+                    ['text' => '🔄 Recurring',          'callback_data' => 'settings:recurring'],
                 ],
                 [
-                    ['text' => '🔄 Recurring',         'callback_data' => 'settings:recurring'],
+                    ['text' => '❤️ Health Score',       'callback_data' => 'settings:health'],
+                    ['text' => '💡 Daily Insights',     'callback_data' => 'settings:insights'],
+                ],
+                [
+                    ['text' => '🏋️ Financial Coach',   'callback_data' => 'settings:coach'],
+                    ['text' => '🤖 AI Chat',            'callback_data' => 'ai:start_chat'],
+                ],
+                [
+                    ['text' => '🔄 Subscriptions',     'callback_data' => 'ai:subscriptions'],
                     ['text' => '🌐 Language',           'callback_data' => 'settings:language'],
-                ],
-                [
-                    ['text' => '❤️ Health Score',      'callback_data' => 'settings:health'],
-                    ['text' => '💡 Daily Insights',    'callback_data' => 'settings:insights'],
-                ],
-                [
-                    ['text' => '🏋️ Financial Coach',  'callback_data' => 'settings:coach'],
-                    ['text' => '🤖 AI Chat',           'callback_data' => 'ai:start_chat'],
-                ],
-                [
-                    ['text' => '🔄 Subscriptions',    'callback_data' => 'ai:subscriptions'],
-                    ['text' => '⚙️ Settings',          'callback_data' => 'settings:menu'],
                 ],
             ],
         ];
