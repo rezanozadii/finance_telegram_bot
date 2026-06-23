@@ -413,11 +413,11 @@ class RecurringHandler
             'chat_id'      => $chatId,
             'message_id'   => $messageId,
             'text'         => "*{$template->description}*\n\n" .
-                "Amount: {$template->currency} " . number_format($template->amount, 2) . "\n" .
-                "Category: {$catLabel}\n" .
-                "Account: {$template->account->name}\n" .
-                "Frequency: {$freqLabel}\n" .
-                "Next due: {$dateLabel}",
+                __('bot.rec_label_amount')    . ": {$template->currency} " . number_format($template->amount, 2) . "\n" .
+                __('bot.rec_label_category')  . ": {$catLabel}\n" .
+                __('bot.rec_label_account')   . ": {$template->account->name}\n" .
+                __('bot.rec_label_frequency') . ": {$freqLabel}\n" .
+                __('bot.rec_label_next_due')  . ": {$dateLabel}",
             'parse_mode'   => 'Markdown',
             'reply_markup' => json_encode(RecurringKeyboard::templateActions($template)),
         ]);

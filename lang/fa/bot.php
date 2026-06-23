@@ -121,6 +121,32 @@ return [
     'balance_no_friends'   => 'هنوز دوستی ندارید. از /addfriend استفاده کنید.',
     'balance_not_friend'   => 'شما با @:username دوست نیستید.',
 
+    // ── Transaction / Summary labels ─────────────────────────────────────────
+    'txn_summary'           => '📝 خلاصه تراکنش',
+    'txn_transfer'          => 'انتقال',
+    'txn_label_type'        => 'نوع',
+    'txn_label_from'        => 'از',
+    'txn_label_to'          => 'به',
+    'txn_label_account'     => 'حساب',
+    'txn_label_category'    => 'دسته‌بندی',
+    'txn_label_amount'      => 'مبلغ',
+    'txn_label_note'        => 'یادداشت',
+    'txn_label_merchant'    => 'فروشنده',
+    'txn_label_date'        => 'تاریخ',
+
+    // ── Friend / Shared expense labels ───────────────────────────────────────
+    'friend_shared_expense' => '💸 هزینه مشترک',
+    'friend_label_with'     => 'با',
+    'friend_label_amount'   => 'مبلغ',
+    'friend_label_note'     => 'یادداشت',
+
+    // ── Recurring template detail labels ─────────────────────────────────────
+    'rec_label_amount'      => 'مبلغ',
+    'rec_label_category'    => 'دسته‌بندی',
+    'rec_label_account'     => 'حساب',
+    'rec_label_frequency'   => 'دوره تکرار',
+    'rec_label_next_due'    => 'سررسید بعدی',
+
     // ── Report ────────────────────────────────────────────────────────────────
     'report_income'        => 'درآمد',
     'report_expenses'      => 'هزینه‌ها',

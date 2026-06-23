@@ -264,33 +264,33 @@ class AiTransactionHandler
         $typeLabel = match ($type) {
             'income'   => '💰 ' . __('bot.report_income'),
             'expense'  => '💸 ' . __('bot.report_expenses'),
-            'transfer' => '🔄 Transfer',
+            'transfer' => '🔄 ' . __('bot.txn_transfer'),
         };
 
         $currency = $data['currency'] ?? '';
         $amount   = isset($data['amount']) ? number_format((float) $data['amount'], 2) : '—';
 
-        $lines = ["Type: {$typeLabel}"];
+        $lines = [__('bot.txn_label_type') . ": {$typeLabel}"];
 
         if ($type === 'transfer') {
-            $lines[] = "From: " . ($data['account_name'] ?? '—');
-            $lines[] = "To: " . ($data['to_account_name'] ?? '—');
+            $lines[] = __('bot.txn_label_from') . ": " . ($data['account_name'] ?? '—');
+            $lines[] = __('bot.txn_label_to')   . ": " . ($data['to_account_name'] ?? '—');
         } else {
-            $lines[] = __('bot.account_list_title') . ": " . ($data['account_name'] ?? '—');
-            $lines[] = __('bot.category_tap_to_edit') . ": " . ($data['category_name'] ?? '—');
+            $lines[] = __('bot.txn_label_account')  . ": " . ($data['account_name'] ?? '—');
+            $lines[] = __('bot.txn_label_category') . ": " . ($data['category_name'] ?? '—');
         }
 
-        $lines[] = __('bot.rec_ask_amount') . ": {$currency} {$amount}";
+        $lines[] = __('bot.txn_label_amount') . ": {$currency} {$amount}";
 
         if (!empty($data['merchant'])) {
-            $lines[] = "Merchant: {$data['merchant']}";
+            $lines[] = __('bot.txn_label_merchant') . ": {$data['merchant']}";
         }
         if (!empty($data['description'])) {
-            $lines[] = "Note: {$data['description']}";
+            $lines[] = __('bot.txn_label_note') . ": {$data['description']}";
         }
         if (!empty($data['occurred_at'])) {
             try {
-                $lines[] = "Date: " . \Carbon\Carbon::parse($data['occurred_at'])->format('M d, Y');
+                $lines[] = __('bot.txn_label_date') . ": " . \Carbon\Carbon::parse($data['occurred_at'])->format('M d, Y');
             } catch (\Throwable) {}
         }
 

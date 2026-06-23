@@ -516,13 +516,13 @@ class FriendHandler
         $currency = $data['currency'] ?? '';
 
         $lines = [
-            "💸 *Shared Expense*\n",
-            "With: {$data['friend_name']}",
-            "Amount: {$currency} {$amount}",
+            "*" . __('bot.friend_shared_expense') . "*\n",
+            __('bot.friend_label_with')   . ": {$data['friend_name']}",
+            __('bot.friend_label_amount') . ": {$currency} {$amount}",
         ];
 
         if (!empty($data['description'])) {
-            $lines[] = "Note: {$data['description']}";
+            $lines[] = __('bot.friend_label_note') . ": {$data['description']}";
         }
 
         return implode("\n", $lines);

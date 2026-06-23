@@ -121,6 +121,32 @@ return [
     'balance_no_friends'   => 'You have no friends yet. Use /addfriend to add one.',
     'balance_not_friend'   => "You're not friends with @:username.",
 
+    // ── Transaction / Summary labels ─────────────────────────────────────────
+    'txn_summary'           => '📝 Transaction Summary',
+    'txn_transfer'          => 'Transfer',
+    'txn_label_type'        => 'Type',
+    'txn_label_from'        => 'From',
+    'txn_label_to'          => 'To',
+    'txn_label_account'     => 'Account',
+    'txn_label_category'    => 'Category',
+    'txn_label_amount'      => 'Amount',
+    'txn_label_note'        => 'Note',
+    'txn_label_merchant'    => 'Merchant',
+    'txn_label_date'        => 'Date',
+
+    // ── Friend / Shared expense labels ───────────────────────────────────────
+    'friend_shared_expense' => '💸 Shared Expense',
+    'friend_label_with'     => 'With',
+    'friend_label_amount'   => 'Amount',
+    'friend_label_note'     => 'Note',
+
+    // ── Recurring template detail labels ─────────────────────────────────────
+    'rec_label_amount'      => 'Amount',
+    'rec_label_category'    => 'Category',
+    'rec_label_account'     => 'Account',
+    'rec_label_frequency'   => 'Frequency',
+    'rec_label_next_due'    => 'Next due',
+
     // ── Report ────────────────────────────────────────────────────────────────
     'report_income'        => 'Income',
     'report_expenses'      => 'Expenses',

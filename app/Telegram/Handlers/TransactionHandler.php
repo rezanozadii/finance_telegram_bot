@@ -277,25 +277,29 @@ class TransactionHandler
         $typeLabel = match ($data['type']) {
             'income'   => '💰 ' . __('bot.report_income'),
             'expense'  => '💸 ' . __('bot.report_expenses'),
-            'transfer' => '🔄 Transfer',
+            'transfer' => '🔄 ' . __('bot.txn_transfer'),
         };
-
-        $lines   = ["📝 *" . __('bot.txn_ask_type') . "*\n", "Type: {$typeLabel}"];
-
-        if ($data['type'] === 'transfer') {
-            $lines[] = "From: {$data['account_name']}";
-            $lines[] = "To: " . ($data['to_account_name'] ?? '—');
-        } else {
-            $lines[] = __('bot.account') . ": {$data['account_name']}";
-            $lines[] = __('bot.category_tap_to_edit') . ": " . ($data['category_name'] ?? '—');
-        }
 
         $currency = $data['currency'] ?? '';
         $amount   = isset($data['amount']) ? number_format($data['amount'], 2) : '—';
-        $lines[]  = __('bot.report_income') . " / Amount: {$currency} {$amount}";
+
+        $lines = [
+            "*" . __('bot.txn_summary') . "*\n",
+            __('bot.txn_label_type') . ": {$typeLabel}",
+        ];
+
+        if ($data['type'] === 'transfer') {
+            $lines[] = __('bot.txn_label_from') . ": " . ($data['account_name'] ?? '—');
+            $lines[] = __('bot.txn_label_to')   . ": " . ($data['to_account_name'] ?? '—');
+        } else {
+            $lines[] = __('bot.txn_label_account')  . ": " . ($data['account_name'] ?? '—');
+            $lines[] = __('bot.txn_label_category') . ": " . ($data['category_name'] ?? '—');
+        }
+
+        $lines[] = __('bot.txn_label_amount') . ": {$currency} {$amount}";
 
         if (!empty($data['description'])) {
-            $lines[] = "Note: {$data['description']}";
+            $lines[] = __('bot.txn_label_note') . ": {$data['description']}";
         }
 
         return implode("\n", $lines);
