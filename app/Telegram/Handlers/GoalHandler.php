@@ -41,6 +41,7 @@ class GoalHandler
         match (true) {
             $action === 'goal:add'                        => $this->startCreation($telegramId, $chatId),
             $action === 'goal:list'                       => $this->showList($telegramId, $chatId, $messageId),
+            str_starts_with($action, 'goal_view:')       => $this->showDetail($telegramId, $chatId, $messageId, (int) substr($action, 10)),
             str_starts_with($action, 'goal_delete:')     => $this->delete($telegramId, $chatId, $messageId, (int) substr($action, 12)),
             str_starts_with($action, 'goal_complete:')   => $this->markComplete($telegramId, $chatId, $messageId, (int) substr($action, 14)),
             default                                       => null,
@@ -178,6 +179,46 @@ class GoalHandler
                 ? "✅ هدف *{$data['name']}* با موفقیت ایجاد شد!"
                 : "✅ Goal *{$data['name']}* created successfully!",
             'parse_mode' => 'Markdown',
+        ]);
+    }
+
+    private function showDetail(int|string $telegramId, int|string $chatId, int $messageId, int $goalId): void
+    {
+        $user = User::where('telegram_id', $telegramId)->firstOrFail();
+        $goal = $user->goals()->find($goalId);
+
+        if (!$goal) {
+            return;
+        }
+
+        $bar  = $this->progressBar($goal->progressPct());
+        $text = "*{$goal->name}*\n\n";
+        $text .= "{$bar} {$goal->progressPct()}%\n";
+        $text .= "{$goal->currency} " . number_format((float) $goal->current_amount, 2) . ' / ' . number_format((float) $goal->target_amount, 2);
+
+        if ($goal->deadline) {
+            $deadline = Carbon::parse($goal->deadline)->format('M d, Y');
+            $text    .= "\n📅 " . ($user->language === 'fa' ? "مهلت: {$deadline}" : "Deadline: {$deadline}");
+        }
+
+        $btnComplete = $user->language === 'fa' ? '✅ تکمیل هدف' : '✅ Mark Complete';
+        $btnDelete   = $user->language === 'fa' ? '🗑 حذف' : '🗑 Delete';
+        $btnBack     = $user->language === 'fa' ? '⬅️ بازگشت' : '⬅️ Back';
+
+        Telegram::editMessageText([
+            'chat_id'      => $chatId,
+            'message_id'   => $messageId,
+            'text'         => $text,
+            'parse_mode'   => 'Markdown',
+            'reply_markup' => json_encode([
+                'inline_keyboard' => [
+                    [
+                        ['text' => $btnComplete, 'callback_data' => "goal_complete:{$goalId}"],
+                        ['text' => $btnDelete,   'callback_data' => "goal_delete:{$goalId}"],
+                    ],
+                    [['text' => $btnBack, 'callback_data' => 'goal:list']],
+                ],
+            ]),
         ]);
     }
 

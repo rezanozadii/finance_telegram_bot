@@ -44,6 +44,7 @@ class BudgetHandler
         match (true) {
             $action === 'budget:add'                     => $this->startCreation($telegramId, $chatId),
             $action === 'budget:list'                    => $this->showList($telegramId, $chatId, $messageId),
+            str_starts_with($action, 'budget_view:')    => $this->showDetail($telegramId, $chatId, $messageId, (int) substr($action, 12)),
             str_starts_with($action, 'budget_period:')  => $this->stepPeriod($telegramId, $chatId, substr($action, 14)),
             str_starts_with($action, 'budget_delete:')  => $this->delete($telegramId, $chatId, $messageId, (int) substr($action, 14)),
             default                                      => null,
@@ -174,6 +175,65 @@ class BudgetHandler
                 ? "✅ بودجه *{$data['name']}* ایجاد شد!"
                 : "✅ Budget *{$data['name']}* created!",
             'parse_mode' => 'Markdown',
+        ]);
+    }
+
+    private function showDetail(int|string $telegramId, int|string $chatId, int $messageId, int $budgetId): void
+    {
+        $user   = User::where('telegram_id', $telegramId)->firstOrFail();
+        $budget = $user->budgets()->find($budgetId);
+
+        if (!$budget) {
+            return;
+        }
+
+        $analysis = $this->budgetAnalysis->analyze($user);
+        $data     = collect($analysis)->firstWhere('id', $budget->id);
+
+        if (!$data) {
+            $data = [
+                'name'     => $budget->name,
+                'amount'   => (float) $budget->amount,
+                'spent'    => 0.0,
+                'pct_used' => 0,
+                'currency' => $budget->currency,
+                'status'   => 'ok',
+            ];
+        }
+
+        $icon = match ($data['status']) {
+            'exceeded' => '🔴',
+            'critical' => '🟠',
+            'warning'  => '🟡',
+            default    => '🟢',
+        };
+
+        $bar  = $this->progressBar($data['pct_used']);
+        $text = "*{$data['name']}*\n\n";
+        $text .= "{$icon} {$bar} {$data['pct_used']}%\n";
+        $text .= "{$data['currency']} " . number_format($data['spent'], 2) . ' / ' . number_format($data['amount'], 2);
+
+        $periodLabel = match ($budget->period) {
+            'weekly' => $user->language === 'fa' ? 'هفتگی' : 'Weekly',
+            'yearly' => $user->language === 'fa' ? 'سالانه' : 'Yearly',
+            default  => $user->language === 'fa' ? 'ماهانه' : 'Monthly',
+        };
+        $text .= "\n📅 " . $periodLabel;
+
+        $btnDelete = $user->language === 'fa' ? '🗑 حذف بودجه' : '🗑 Delete Budget';
+        $btnBack   = $user->language === 'fa' ? '⬅️ بازگشت' : '⬅️ Back';
+
+        Telegram::editMessageText([
+            'chat_id'      => $chatId,
+            'message_id'   => $messageId,
+            'text'         => $text,
+            'parse_mode'   => 'Markdown',
+            'reply_markup' => json_encode([
+                'inline_keyboard' => [
+                    [['text' => $btnDelete, 'callback_data' => "budget_delete:{$budgetId}"]],
+                    [['text' => $btnBack,   'callback_data' => 'budget:list']],
+                ],
+            ]),
         ]);
     }
 

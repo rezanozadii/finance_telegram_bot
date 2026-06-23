@@ -12,7 +12,7 @@ class GoalKeyboard
 
         foreach ($goals as $goal) {
             $buttons[] = [
-                ['text' => "🎯 {$goal->name}", 'callback_data' => "goal_complete:{$goal->id}"],
+                ['text' => "🎯 {$goal->name}", 'callback_data' => "goal_view:{$goal->id}"],
                 ['text' => '🗑', 'callback_data' => "goal_delete:{$goal->id}"],
             ];
         }
