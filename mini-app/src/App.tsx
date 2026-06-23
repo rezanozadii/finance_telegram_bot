@@ -64,7 +64,8 @@ type AuthStatus = 'loading' | 'ok' | 'no_telegram' | 'not_registered' | 'auth_er
 function AuthScreen({ status, lang }: { status: AuthStatus; lang: Lang }) {
   const fa = lang === 'fa';
   const containerStyle: React.CSSProperties = {
-    height: '100dvh',
+    flex: 1,
+    minHeight: 0,
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
@@ -235,7 +236,8 @@ function AppInner() {
       <div
         dir={dir}
         style={{
-          height: '100dvh',
+          flex: 1,
+          minHeight: 0,
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
@@ -293,6 +295,7 @@ function AppInner() {
         {/* Scrollable content */}
         <div style={{
           flex: 1,
+          minHeight: 0,
           overflowY: tab === 'ai' && aiPage === 'chat' ? 'hidden' : 'auto',
           overflowX: 'hidden',
           WebkitOverflowScrolling: 'touch',

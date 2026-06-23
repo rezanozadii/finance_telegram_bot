@@ -1,4 +1,3 @@
-import { Tabbar } from '@telegram-apps/telegram-ui';
 import { useLang } from '../LangContext';
 
 export type Tab = 'dashboard' | 'transactions' | 'report' | 'friends' | 'ai';
@@ -20,17 +19,40 @@ export function BottomNav({ active, onChange }: Props) {
   ];
 
   return (
-    <Tabbar>
+    <div
+      style={{
+        display: 'flex',
+        width: '100%',
+      }}
+    >
       {TABS.map((tab) => (
-        <Tabbar.Item
+        <button
           key={tab.id}
-          text={tab.label}
-          selected={active === tab.id}
           onClick={() => onChange(tab.id)}
+          style={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 2,
+            padding: '6px 0',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            color: active === tab.id
+              ? 'var(--tg-theme-button-color, #007aff)'
+              : 'var(--tg-theme-hint-color, #8e8e93)',
+            fontSize: 10,
+            fontWeight: active === tab.id ? 600 : 400,
+            transition: 'color 0.15s',
+            WebkitTapHighlightColor: 'transparent',
+          }}
         >
-          <span style={{ fontSize: 22 }}>{tab.icon}</span>
-        </Tabbar.Item>
+          <span style={{ fontSize: 22, lineHeight: 1 }}>{tab.icon}</span>
+          <span>{tab.label}</span>
+        </button>
       ))}
-    </Tabbar>
+    </div>
   );
 }
