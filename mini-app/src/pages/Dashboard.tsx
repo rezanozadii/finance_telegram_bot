@@ -74,7 +74,7 @@ export function Dashboard({ onNavigate }: Props) {
             key={a.id}
             before={<span style={{ fontSize: 22 }}>{acctIcon(a.type)}</span>}
             after={<Text style={{ color: a.balance < 0 ? '#ff3b30' : undefined }}>{fmt(a.balance, a.currency)}</Text>}
-            subtitle={a.type}
+            subtitle={acctTypeLabel(a.type, t)}
           >
             {a.name}
           </Cell>
@@ -102,7 +102,7 @@ export function Dashboard({ onNavigate }: Props) {
                 </Text>
               }
             >
-              {tx.merchant || tx.description || tx.account?.name || tx.type}
+              {tx.merchant || tx.description || tx.account?.name || t(tx.type as 'income' | 'expense' | 'transfer')}
             </Cell>
           ))
         )}
@@ -123,6 +123,17 @@ export function Dashboard({ onNavigate }: Props) {
 
 function acctIcon(type: string) {
   return { cash: '💵', card: '💳', bank: '🏦', 'e-wallet': '📱', credit: '💳' }[type] ?? '💰';
+}
+
+function acctTypeLabel(type: string, t: (key: string) => string): string {
+  const map: Record<string, string> = {
+    cash:       'type_cash',
+    card:       'type_card',
+    bank:       'type_bank',
+    'e-wallet': 'type_ewallet',
+    credit:     'type_credit',
+  };
+  return t(map[type] ?? 'account');
 }
 
 function txnEmoji(type: string) {
