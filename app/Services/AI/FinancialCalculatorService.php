@@ -76,10 +76,17 @@ class FinancialCalculatorService
 
     public function getMonthlyTrend(User $user, int $months, string $currency): array
     {
-        $trend = [];
+        $trend     = [];
+        $userStart = $user->created_at->copy()->startOfMonth();
 
         for ($i = $months - 1; $i >= 0; $i--) {
-            $start  = Carbon::now()->subMonthsNoOverflow($i)->startOfMonth();
+            $start = Carbon::now()->subMonthsNoOverflow($i)->startOfMonth();
+
+            // Skip months that predate account creation — they would only add empty zeros
+            if ($start->lt($userStart)) {
+                continue;
+            }
+
             $end    = Carbon::now()->subMonthsNoOverflow($i)->endOfMonth();
             $stats  = $this->getStats($user, $start, $end, $currency);
 

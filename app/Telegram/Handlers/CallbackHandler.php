@@ -248,6 +248,15 @@ class CallbackHandler
             }
         }
 
+        // Inform new users that their score will improve with more transaction history
+        $ageDays = $score['account_age_days'] ?? null;
+        if ($ageDays !== null && $ageDays < 30) {
+            $lines[] = '';
+            $lines[] = $lang === 'fa'
+                ? "ℹ️ حساب شما {$ageDays} روز قدم دارد. با ثبت تراکنش‌های بیشتر، امتیاز دقیق‌تر می‌شود."
+                : "ℹ️ Your account is {$ageDays} day(s) old. Score accuracy improves as you log more transactions.";
+        }
+
         Telegram::sendMessage([
             'chat_id'      => $chatId,
             'text'         => implode("\n", $lines),

@@ -29,6 +29,9 @@ class MainKeyboard
                         ['text' => '🏦 حساب‌ها'],
                         ['text' => '⚙️ تنظیمات'],
                     ],
+                    [
+                        ['text' => '📖 آموزش ربات'],
+                    ],
                 ],
                 'resize_keyboard'   => true,
                 'persistent'        => true,
@@ -56,6 +59,9 @@ class MainKeyboard
                 [
                     ['text' => '🏦 Accounts'],
                     ['text' => '⚙️ Settings'],
+                ],
+                [
+                    ['text' => '📖 Tutorial'],
                 ],
             ],
             'resize_keyboard'   => true,

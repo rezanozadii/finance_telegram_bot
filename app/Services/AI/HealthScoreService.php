@@ -16,7 +16,9 @@ class HealthScoreService
     public function calculate(User $user, string $currency): array
     {
         $now        = Carbon::now();
-        $start      = $now->copy()->subMonths(3)->startOfMonth();
+        $userStart  = $user->created_at->copy()->startOfMonth();
+        // Never look further back than the account creation month
+        $start      = Carbon::max($now->copy()->subMonths(3)->startOfMonth(), $userStart);
         $end        = $now->copy()->endOfMonth();
         $stats      = $this->calculator->getStats($user, $start, $end, $currency);
         $trend      = $this->calculator->getMonthlyTrend($user, 6, $currency);
@@ -98,7 +100,10 @@ class HealthScoreService
         // Emergency Fund (weight 10)
         $liquidBalance = (float) $accounts->whereIn('type', ['cash', 'bank', 'e-wallet'])->sum('current_balance');
         $avgMonthlyExp = $stats['avg_daily_expense'] * 30;
-        $monthsCovered = $avgMonthlyExp > 0 ? $liquidBalance / $avgMonthlyExp : 0;
+        // If no expense history yet (new account), give full coverage when liquid balance exists
+        $monthsCovered = $avgMonthlyExp > 0
+            ? $liquidBalance / $avgMonthlyExp
+            : ($liquidBalance > 0 ? 6 : 0);
         $efScore       = (int) min(100, $monthsCovered / 6 * 100);
         $components[]  = [
             'key'            => 'emergency_fund',
@@ -148,14 +153,16 @@ class HealthScoreService
             'explanation'    => __('health.exp_transaction_diversity', ['count' => $uniqueCategories]),
         ];
 
-        $totalScore = (int) array_sum(array_column($components, 'weighted_score'));
-        $grade      = $this->grade($totalScore);
+        $totalScore      = (int) array_sum(array_column($components, 'weighted_score'));
+        $grade           = $this->grade($totalScore);
+        $accountAgeDays  = (int) $user->created_at->diffInDays($now);
 
         return [
-            'total'       => $totalScore,
-            'personality' => __('health.personality_' . $grade),
-            'components'  => collect($components)->keyBy('key')->toArray(),
-            'currency'    => $currency,
+            'total'            => $totalScore,
+            'personality'      => __('health.personality_' . $grade),
+            'components'       => collect($components)->keyBy('key')->toArray(),
+            'currency'         => $currency,
+            'account_age_days' => $accountAgeDays,
         ];
     }
 

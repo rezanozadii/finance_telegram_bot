@@ -12,7 +12,7 @@ class BudgetKeyboard
 
         foreach ($budgets as $budget) {
             $buttons[] = [
-                ['text' => "📊 {$budget->name}", 'callback_data' => "budget:list"],
+                ['text' => "📊 {$budget->name}", 'callback_data' => "budget_view:{$budget->id}"],
                 ['text' => '🗑', 'callback_data' => "budget_delete:{$budget->id}"],
             ];
         }

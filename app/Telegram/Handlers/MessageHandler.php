@@ -32,6 +32,8 @@ class MessageHandler
         '🏦 حساب‌ها'           => 'menuAccounts',
         '⚙️ Settings'          => 'menuSettings',
         '⚙️ تنظیمات'           => 'menuSettings',
+        '📖 Tutorial'          => 'menuTutorial',
+        '📖 آموزش ربات'        => 'menuTutorial',
     ];
 
     public function __construct(
@@ -267,6 +269,96 @@ class MessageHandler
             'text'         => $text,
             'parse_mode'   => 'Markdown',
             'reply_markup' => json_encode(MainKeyboard::settings($lang)),
+        ]);
+    }
+
+    private function menuTutorial(int|string $telegramId, int|string $chatId): void
+    {
+        $user = User::where('telegram_id', $telegramId)->first();
+        $lang = $user?->language ?? 'en';
+
+        if ($lang === 'fa') {
+            $text = <<<'FA'
+📖 *راهنمای استفاده از ربات مالی*
+
+━━━━━━━━━━━━━━━━━━
+➕ *افزودن تراکنش*
+برای ثبت هزینه یا درآمد روی «افزودن تراکنش» بزنید یا هر متنی مانند «۵۰۰۰۰ تومان ناهار» بنویسید تا هوش مصنوعی آن را ثبت کند.
+
+💰 *موجودی*
+مانده بدهکاری/بستانکاری با دوستان را نشان می‌دهد.
+
+📊 *گزارش*
+نمودار درآمد و هزینه ماه جاری، ماه گذشته، سه‌ماهه یا سالانه.
+
+📋 *تراکنش‌ها*
+لیست آخرین تراکنش‌ها. می‌توانید بر اساس نوع فیلتر کنید.
+
+🎯 *اهداف*
+هدف پس‌انداز بسازید. روی نام هدف بزنید تا جزئیات ببینید و آن را تکمیل یا حذف کنید.
+
+💼 *بودجه‌ها*
+سقف هزینه ماهانه/هفتگی/سالانه تعریف کنید. روی نام بودجه بزنید تا وضعیت مصرف را ببینید.
+
+👥 *دوستان*
+هزینه مشترک با دوستان ثبت کنید و تسویه حساب کنید.
+
+🤖 *هوش مصنوعی*
+سوال مالی بپرسید، امتیاز سلامت مالی بگیرید، مشاوره هفتگی دریافت کنید یا اشتراک‌های تکراری را شناسایی کنید.
+
+🏦 *حساب‌ها*
+کیف پول، حساب بانکی یا کارت اعتباری اضافه کنید.
+
+⚙️ *تنظیمات*
+زبان، دسته‌بندی‌ها، تراکنش‌های تکرارشونده و موارد بیشتر.
+
+━━━━━━━━━━━━━━━━━━
+💡 *نکته:* برای ثبت سریع تراکنش کافی است متن بنویسید؛ مثلاً: «خرید نان ۸۰۰۰ تومان» یا «حقوق ۵ میلیون».
+FA;
+        } else {
+            $text = <<<'EN'
+📖 *Bot Tutorial — How to Use*
+
+━━━━━━━━━━━━━━━━━━
+➕ *Add Transaction*
+Tap "Add Transaction" or simply type something like "lunch $12" and the AI will log it for you automatically.
+
+💰 *Balance*
+Shows what your friends owe you (or you owe them) across shared expenses.
+
+📊 *Report*
+Income vs expense chart for this month, last month, this quarter, or this year.
+
+📋 *Transactions*
+View your recent transactions. Filter by Expense, Income, or Transfer.
+
+🎯 *Goals*
+Create a savings goal. Tap a goal name to see details and mark it complete or delete it.
+
+💼 *Budgets*
+Set monthly/weekly/yearly spending limits. Tap a budget name to see your progress.
+
+👥 *Friends*
+Log shared expenses with friends and settle up when needed.
+
+🤖 *AI Coach*
+Ask any finance question, get your Financial Health Score, receive weekly coaching, or detect recurring subscriptions.
+
+🏦 *Accounts*
+Add cash wallets, bank accounts, or credit cards to track balances.
+
+⚙️ *Settings*
+Change language, manage categories, set up recurring transactions, and more.
+
+━━━━━━━━━━━━━━━━━━
+💡 *Tip:* You can log a transaction just by typing — e.g. "coffee $4.50" or "salary 3000" — no buttons needed!
+EN;
+        }
+
+        Telegram::sendMessage([
+            'chat_id'    => $chatId,
+            'text'       => $text,
+            'parse_mode' => 'Markdown',
         ]);
     }
 }
