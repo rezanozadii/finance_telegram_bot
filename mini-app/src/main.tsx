@@ -10,16 +10,16 @@ function applyTelegramSafeAreas() {
   const tg = window.Telegram?.WebApp;
   if (!tg) return;
 
-  // contentSafeAreaInset = space occupied by Telegram's own UI (close button, etc.)
-  const ci = tg.contentSafeAreaInset ?? { top: 0, bottom: 0, left: 0, right: 0 };
-  // safeAreaInset = device safe area (notch, home bar)
-  const si = tg.safeAreaInset ?? { top: 0, bottom: 0, left: 0, right: 0 };
+  // contentSafeAreaInset.top = pixels Telegram's own overlay (close button) covers.
+  // Telegram already places the viewport below the device notch/status bar, so we
+  // must NOT add safeAreaInset.top — that would double-count it and push the header
+  // too far down. Only use contentSafeAreaInset for the top.
+  const ci = tg.contentSafeAreaInset ?? { top: 0, bottom: 0 };
+  // For the bottom, use the larger of Telegram overlay and device home-bar inset.
+  const si = tg.safeAreaInset ?? { bottom: 0 };
 
-  const top    = Math.max(ci.top,    si.top);
-  const bottom = Math.max(ci.bottom, si.bottom);
-
-  document.documentElement.style.setProperty('--tg-safe-top',    `${top}px`);
-  document.documentElement.style.setProperty('--tg-safe-bottom', `${bottom}px`);
+  document.documentElement.style.setProperty('--tg-safe-top',    `${ci.top}px`);
+  document.documentElement.style.setProperty('--tg-safe-bottom', `${Math.max(ci.bottom, si.bottom)}px`);
 }
 
 try {
