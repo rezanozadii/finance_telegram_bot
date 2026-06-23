@@ -13,6 +13,10 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->validateCsrfTokens(except: ['webhook/telegram']);
+
+        // Security headers on every response (API + web)
+        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
+
         $middleware->alias([
             'telegram.auth' => \App\Http\Middleware\TelegramInitDataAuth::class,
         ]);

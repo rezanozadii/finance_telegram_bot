@@ -13,6 +13,9 @@ use App\Services\AI\HealthScoreService;
 use App\Services\AI\SpendingPatternService;
 use App\Services\AI\SubscriptionDetectorService;
 use App\Services\AI\WhatIfSimulatorService;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -32,5 +35,31 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(AgentOrchestrator::class);
     }
 
-    public function boot(): void {}
+    public function boot(): void
+    {
+        // General API: 60 requests per minute, keyed by authenticated user id
+        RateLimiter::for('api', function (Request $request) {
+            $user = $request->attributes->get('telegram_user');
+            $key  = $user ? 'user:' . $user->id : 'ip:' . $request->ip();
+            return Limit::perMinute(60)->by($key)->response(
+                fn () => response()->json(['error' => 'Too many requests. Please slow down.'], 429)
+            );
+        });
+
+        // AI endpoints: expensive — limit to 15 per minute per user
+        RateLimiter::for('api.ai', function (Request $request) {
+            $user = $request->attributes->get('telegram_user');
+            $key  = $user ? 'ai:user:' . $user->id : 'ai:ip:' . $request->ip();
+            return Limit::perMinute(15)->by($key)->response(
+                fn () => response()->json(['error' => 'AI rate limit reached. Please wait a moment.'], 429)
+            );
+        });
+
+        // Telegram webhook: limit by IP to protect against replay floods
+        RateLimiter::for('webhook', function (Request $request) {
+            return Limit::perMinute(120)->by($request->ip())->response(
+                fn () => response()->json(['error' => 'Too many requests'], 429)
+            );
+        });
+    }
 }

@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', fn () => response()->json(['status' => 'ok']));
 
 Route::post('/webhook/telegram', WebhookController::class)
+    ->middleware('throttle:webhook')
     ->name('telegram.webhook');
 
 // Serve the React Mini App — all /mini-app/* paths fall through to index.html
