@@ -31,23 +31,13 @@ class ChatAgent extends BaseAgent
     {
         $context = $this->gatherContext($user, $this->tools(), ['currency' => $currency]);
 
-        return $this->callLlm(
-            $this->systemPrompt($user),
-            $question,
-            $context,
-            1024
-        );
+        return $this->callLlm($user, $question, $context, 1024);
     }
 
     public function chatStream(User $user, string $question, string $currency): \Generator
     {
         $context = $this->gatherContext($user, $this->tools(), ['currency' => $currency]);
 
-        yield from $this->callLlmStream(
-            $this->systemPrompt($user),
-            $question,
-            $context,
-            1024
-        );
+        yield from $this->callLlmStream($user, $question, $context, 1024);
     }
 }

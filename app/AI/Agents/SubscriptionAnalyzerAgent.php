@@ -22,7 +22,7 @@ class SubscriptionAnalyzerAgent extends BaseAgent
         $context = $this->gatherContext($user, $this->tools());
 
         return $this->callLlm(
-            $this->systemPrompt($user),
+            $user,
             "Review subscriptions and identify cost-saving opportunities.",
             $context,
             1024

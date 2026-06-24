@@ -24,7 +24,7 @@ class GoalPlannerAgent extends BaseAgent
         $context = $this->gatherContext($user, $this->tools(), ['currency' => $currency]);
 
         return $this->callLlm(
-            $this->systemPrompt($user),
+            $user,
             "Provide a goal plan with timelines and strategies for each active goal.",
             $context,
             1024

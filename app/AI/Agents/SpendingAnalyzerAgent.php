@@ -29,7 +29,7 @@ class SpendingAnalyzerAgent extends BaseAgent
         ]);
 
         return $this->callLlm(
-            $this->systemPrompt($user),
+            $user,
             "Analyze spending patterns and provide top 3 insights with concrete data.",
             $context,
             1024

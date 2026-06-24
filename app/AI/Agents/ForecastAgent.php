@@ -24,7 +24,7 @@ class ForecastAgent extends BaseAgent
         $context = $this->gatherContext($user, $this->tools(), ['currency' => $currency]);
 
         return $this->callLlm(
-            $this->systemPrompt($user),
+            $user,
             "Explain the financial forecast and outlook.",
             $context,
             1024

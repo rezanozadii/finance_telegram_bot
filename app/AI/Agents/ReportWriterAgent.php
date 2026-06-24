@@ -39,7 +39,7 @@ class ReportWriterAgent extends BaseAgent
         ]);
 
         return $this->callLlm(
-            $this->systemPrompt($user),
+            $user,
             "Generate the monthly financial report for {$month->format('F Y')}.",
             $context,
             2048

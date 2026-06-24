@@ -31,19 +31,39 @@ abstract class BaseAgent
         return $context;
     }
 
-    protected function callLlm(string $system, string $userMessage, array $context, int $maxTokens = 1024): string
+    /**
+     * Appends a hard language instruction so the LLM always responds in
+     * the user's chosen language, regardless of the data language.
+     */
+    private function systemPromptWithLang(User $user): string
     {
-        $contextJson = json_encode($context, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-        $fullMessage = "Financial Data:\n```json\n{$contextJson}\n```\n\n{$userMessage}";
-
-        return $this->client->complete($system, $fullMessage, $maxTokens);
+        $base = $this->systemPrompt($user);
+        $lang = $user->language === 'fa'
+            ? ' IMPORTANT: You MUST respond entirely in Persian (Farsi). Do not write any English words or sentences.'
+            : ' Respond in English.';
+        return $base . $lang;
     }
 
-    protected function callLlmStream(string $system, string $userMessage, array $context, int $maxTokens = 1024): \Generator
+    /**
+     * Call the LLM with language enforcement baked in.
+     * Pass the User object so the system prompt is automatically localised.
+     */
+    protected function callLlm(User $user, string $userMessage, array $context, int $maxTokens = 1024): string
     {
         $contextJson = json_encode($context, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         $fullMessage = "Financial Data:\n```json\n{$contextJson}\n```\n\n{$userMessage}";
 
-        yield from $this->client->completeStream($system, $fullMessage, $maxTokens);
+        return $this->client->complete($this->systemPromptWithLang($user), $fullMessage, $maxTokens);
+    }
+
+    /**
+     * Streaming variant — yields tokens as they arrive from the LLM.
+     */
+    protected function callLlmStream(User $user, string $userMessage, array $context, int $maxTokens = 1024): \Generator
+    {
+        $contextJson = json_encode($context, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        $fullMessage = "Financial Data:\n```json\n{$contextJson}\n```\n\n{$userMessage}";
+
+        yield from $this->client->completeStream($this->systemPromptWithLang($user), $fullMessage, $maxTokens);
     }
 }

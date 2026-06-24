@@ -24,7 +24,7 @@ class FinancialHealthAgent extends BaseAgent
         $context = $this->gatherContext($user, $this->tools(), ['currency' => $currency]);
 
         return $this->callLlm(
-            $this->systemPrompt($user),
+            $user,
             "Explain the financial health score and provide improvement recommendations.",
             $context,
             1024

@@ -23,11 +23,14 @@ class FinancialCoachAgent extends BaseAgent
     public function weeklyCoaching(User $user, string $currency): string
     {
         $context = $this->gatherContext($user, $this->tools(), ['currency' => $currency]);
-        return $this->callLlm(
-            $this->systemPrompt($user),
-            "Generate weekly financial coaching for this user.",
-            $context,
-            1024
-        );
+
+        return $this->callLlm($user, "Generate weekly financial coaching for this user.", $context, 1024);
+    }
+
+    public function weeklyCoachingStream(User $user, string $currency): \Generator
+    {
+        $context = $this->gatherContext($user, $this->tools(), ['currency' => $currency]);
+
+        yield from $this->callLlmStream($user, "Generate weekly financial coaching for this user.", $context, 1024);
     }
 }

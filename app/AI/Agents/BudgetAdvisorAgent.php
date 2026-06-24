@@ -24,7 +24,7 @@ class BudgetAdvisorAgent extends BaseAgent
         $context  = $this->gatherContext($user, $this->tools(), ['currency' => $currency]);
 
         return $this->callLlm(
-            $this->systemPrompt($user),
+            $user,
             "Review budgets and provide recommendations.",
             $context,
             1024

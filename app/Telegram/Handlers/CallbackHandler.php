@@ -312,21 +312,46 @@ class CallbackHandler
         ]);
         $messageId = $sent->getMessageId();
 
-        $currency = $user->default_currency ?? 'USD';
-        $coaching = app(FinancialCoachAgent::class)->weeklyCoaching($user, $currency);
+        $currency    = $user->default_currency ?? 'USD';
+        $accumulated = '';
+        $lastEditAt  = 0.0;
+        $header      = $lang === 'fa' ? "🏋️ *مشاوره مالی*\n\n" : "🏋️ *Financial Coaching*\n\n";
 
-        Telegram::editMessageText([
-            'chat_id'      => $chatId,
-            'message_id'   => $messageId,
-            'text'         => ($lang === 'fa' ? "🏋️ *مشاوره مالی*\n\n" : "🏋️ *Financial Coaching*\n\n") . $coaching,
-            'parse_mode'   => 'Markdown',
-            'reply_markup' => json_encode([
-                'inline_keyboard' => [[
-                    ['text' => $lang === 'fa' ? '❤️ سلامت مالی' : '❤️ Health Score',   'callback_data' => 'settings:health'],
-                    ['text' => $lang === 'fa' ? '💡 بینش‌ها' : '💡 Daily Insights',     'callback_data' => 'settings:insights'],
-                ]],
-            ]),
-        ]);
+        try {
+            foreach (app(FinancialCoachAgent::class)->weeklyCoachingStream($user, $currency) as $chunk) {
+                $accumulated .= $chunk;
+                $now = microtime(true);
+
+                if (($now - $lastEditAt) >= 0.8 && trim($accumulated) !== '') {
+                    try {
+                        Telegram::editMessageText([
+                            'chat_id'    => $chatId,
+                            'message_id' => $messageId,
+                            'text'       => $accumulated . ' ▌',
+                        ]);
+                        $lastEditAt = $now;
+                    } catch (\Throwable) {}
+                }
+            }
+
+            Telegram::editMessageText([
+                'chat_id'      => $chatId,
+                'message_id'   => $messageId,
+                'text'         => $header . $accumulated,
+                'parse_mode'   => 'Markdown',
+                'reply_markup' => json_encode([
+                    'inline_keyboard' => [[
+                        ['text' => $lang === 'fa' ? '❤️ سلامت مالی' : '❤️ Health Score',   'callback_data' => 'settings:health'],
+                        ['text' => $lang === 'fa' ? '💡 بینش‌ها' : '💡 Daily Insights',     'callback_data' => 'settings:insights'],
+                    ]],
+                ]),
+            ]);
+        } catch (\Throwable) {
+            $err = $lang === 'fa' ? '⚠️ پردازش درخواست ممکن نیست. دوباره تلاش کنید.' : '⚠️ Unable to prepare coaching. Please try again.';
+            try {
+                Telegram::editMessageText(['chat_id' => $chatId, 'message_id' => $messageId, 'text' => $err]);
+            } catch (\Throwable) {}
+        }
     }
 
     private function sendSubscriptions(int|string $chatId, User $user, string $lang): void
