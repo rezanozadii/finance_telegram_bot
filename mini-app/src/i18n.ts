@@ -143,6 +143,13 @@ const en = {
   income_categories: 'Income Categories',
   expense_categories: 'Expense Categories',
   no_categories: 'No categories found',
+  add_category: 'Add Category',
+  category_type: 'Type',
+  category_icon: 'Icon (emoji, optional)',
+  cat_type_expense: 'Expense',
+  cat_type_income: 'Income',
+  save: 'Save',
+  cancel: 'Cancel',
 
   // Settings page
   settings: 'Settings',
@@ -334,6 +341,13 @@ const fa: Record<keyof typeof en, string> = {
   income_categories: 'دسته‌بندی درآمد',
   expense_categories: 'دسته‌بندی هزینه',
   no_categories: 'دسته‌بندی یافت نشد',
+  add_category: 'افزودن دسته‌بندی',
+  category_type: 'نوع',
+  category_icon: 'آیکون (ایموجی، اختیاری)',
+  cat_type_expense: 'هزینه',
+  cat_type_income: 'درآمد',
+  save: 'ذخیره',
+  cancel: 'لغو',
 
   // Settings page
   settings: 'تنظیمات',

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Cell, List, Section, Spinner } from '@telegram-apps/telegram-ui';
+import { Button, Cell, Input, List, Section, Select, Spinner } from '@telegram-apps/telegram-ui';
 import { api } from '../api/client';
 import { useLang } from '../LangContext';
 import type { Category } from '../types';
@@ -11,8 +11,15 @@ interface Props {
 export function Categories({ onBack }: Props) {
   const { t, lang } = useLang();
   const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [loading, setLoading]       = useState(true);
+  const [error, setError]           = useState('');
+  const [showForm, setShowForm]     = useState(false);
+  const [saving, setSaving]         = useState(false);
+  const [formError, setFormError]   = useState('');
+
+  const [newName, setNewName] = useState('');
+  const [newType, setNewType] = useState<'income' | 'expense'>('expense');
+  const [newIcon, setNewIcon] = useState('');
 
   useEffect(() => {
     setLoading(true);
@@ -22,6 +29,28 @@ export function Categories({ onBack }: Props) {
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
   }, [lang]);
+
+  async function handleCreate() {
+    if (!newName.trim()) return;
+    setSaving(true);
+    setFormError('');
+    try {
+      const created = await api.createCategory({
+        name: newName.trim(),
+        type: newType,
+        icon: newIcon.trim() || undefined,
+      });
+      setCategories((prev) => [...prev, created]);
+      setShowForm(false);
+      setNewName('');
+      setNewIcon('');
+      setNewType('expense');
+    } catch (e: unknown) {
+      setFormError(e instanceof Error ? e.message : 'Error');
+    } finally {
+      setSaving(false);
+    }
+  }
 
   const income  = categories.filter((c) => c.type === 'income'  && !c.parent_id);
   const expense = categories.filter((c) => c.type === 'expense' && !c.parent_id);
@@ -58,10 +87,67 @@ export function Categories({ onBack }: Props) {
               ←
             </button>
           }
+          after={
+            <button
+              onClick={() => { setShowForm((v) => !v); setFormError(''); }}
+              style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#007aff', padding: 0, lineHeight: 1 }}
+            >
+              {showForm ? '✕' : '＋'}
+            </button>
+          }
         >
           <span style={{ fontWeight: 600, fontSize: 17 }}>{t('categories')}</span>
         </Cell>
       </Section>
+
+      {showForm && (
+        <Section header={t('add_category')}>
+          <Cell>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <Input
+                placeholder={t('category_name')}
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+              />
+              <Input
+                placeholder={t('category_icon')}
+                value={newIcon}
+                onChange={(e) => setNewIcon(e.target.value)}
+                maxLength={4}
+              />
+              <Select
+                value={newType}
+                onChange={(e) => setNewType(e.target.value as 'income' | 'expense')}
+              >
+                <option value="expense">{t('cat_type_expense')}</option>
+                <option value="income">{t('cat_type_income')}</option>
+              </Select>
+              {formError && (
+                <div style={{ color: '#ff3b30', fontSize: 13 }}>{formError}</div>
+              )}
+              <div style={{ display: 'flex', gap: 8 }}>
+                <Button
+                  size="s"
+                  mode="filled"
+                  onClick={handleCreate}
+                  disabled={saving || !newName.trim()}
+                  style={{ flex: 1 }}
+                >
+                  {saving ? '…' : t('save')}
+                </Button>
+                <Button
+                  size="s"
+                  mode="outline"
+                  onClick={() => { setShowForm(false); setFormError(''); }}
+                  style={{ flex: 1 }}
+                >
+                  {t('cancel')}
+                </Button>
+              </div>
+            </div>
+          </Cell>
+        </Section>
+      )}
 
       {loading && <div style={{ display: 'flex', justifyContent: 'center', padding: 40 }}><Spinner size="m" /></div>}
       {error && <Section><Cell style={{ color: '#ff3b30' }}>{error}</Cell></Section>}

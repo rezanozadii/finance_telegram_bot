@@ -38,4 +38,12 @@ abstract class BaseAgent
 
         return $this->client->complete($system, $fullMessage, $maxTokens);
     }
+
+    protected function callLlmStream(string $system, string $userMessage, array $context, int $maxTokens = 1024): \Generator
+    {
+        $contextJson = json_encode($context, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        $fullMessage = "Financial Data:\n```json\n{$contextJson}\n```\n\n{$userMessage}";
+
+        yield from $this->client->completeStream($system, $fullMessage, $maxTokens);
+    }
 }

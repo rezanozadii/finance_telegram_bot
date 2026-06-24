@@ -204,7 +204,7 @@ class CategoryHandler
         Telegram::editMessageText([
             'chat_id'      => $chatId,
             'message_id'   => $messageId,
-            'text'         => __('bot.category_detail', ['icon' => $icon, 'name' => $category->name, 'type' => $category->type]),
+            'text'         => __('bot.category_detail', ['icon' => $icon, 'name' => $category->localizedName(), 'type' => $category->type]),
             'parse_mode'   => 'Markdown',
             'reply_markup' => json_encode(CategoryKeyboard::categoryActions($category, $this->categoryService->canDelete($category))),
         ]);
@@ -362,10 +362,10 @@ class CategoryHandler
             $lines[] = "💸 *" . __('bot.report_expenses') . "* ({$expense->count()})";
             foreach ($expense as $cat) {
                 $icon    = $cat->icon ? $cat->icon . ' ' : '• ';
-                $lines[] = "  {$icon}{$cat->name}";
+                $lines[] = "  {$icon}{$cat->localizedName()}";
                 foreach ($categories->where('parent_id', $cat->id) as $child) {
                     $ci      = $child->icon ? $child->icon . ' ' : '◦ ';
-                    $lines[] = "    ↳ {$ci}{$child->name}";
+                    $lines[] = "    ↳ {$ci}{$child->localizedName()}";
                 }
             }
         }
@@ -375,10 +375,10 @@ class CategoryHandler
             $lines[] = "💰 *" . __('bot.report_income') . "* ({$income->count()})";
             foreach ($income as $cat) {
                 $icon    = $cat->icon ? $cat->icon . ' ' : '• ';
-                $lines[] = "  {$icon}{$cat->name}";
+                $lines[] = "  {$icon}{$cat->localizedName()}";
                 foreach ($categories->where('parent_id', $cat->id) as $child) {
                     $ci      = $child->icon ? $child->icon . ' ' : '◦ ';
-                    $lines[] = "    ↳ {$ci}{$child->name}";
+                    $lines[] = "    ↳ {$ci}{$child->localizedName()}";
                 }
             }
         }

@@ -20,6 +20,7 @@ Route::middleware(['telegram.auth', 'throttle:api'])->group(function () {
     Route::post('/accounts', [AccountController::class, 'store']);
 
     Route::get('/categories', [CategoryController::class, 'index']);
+    Route::post('/categories', [CategoryController::class, 'store']);
 
     Route::get('/transactions', [TransactionController::class, 'index']);
     Route::post('/transactions', [TransactionController::class, 'store']);

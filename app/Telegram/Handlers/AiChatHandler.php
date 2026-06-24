@@ -41,25 +41,58 @@ class AiChatHandler
         }
 
         Telegram::sendChatAction(['chat_id' => $chatId, 'action' => 'typing']);
-        Telegram::sendMessage([
-            'chat_id' => $chatId,
-            'text'    => $user->language === 'fa' ? '⏳ در حال پردازش...' : '⏳ Thinking...',
-        ]);
+
+        // Send placeholder that we'll edit in-place as the response streams in
+        $placeholder = $user->language === 'fa' ? '⌛ در حال پردازش...' : '⌛ Thinking...';
+        $sent        = Telegram::sendMessage(['chat_id' => $chatId, 'text' => $placeholder]);
+        $messageId   = $sent->getMessageId();
 
         try {
-            $currency = $user->default_currency ?? 'USD';
-            $response = $this->orchestrator->handle($user, $text, $currency);
+            $currency    = $user->default_currency ?? 'USD';
+            $accumulated = '';
+            $lastEditAt  = 0.0;
 
-            Telegram::sendMessage([
-                'chat_id'    => $chatId,
-                'text'       => $response,
-                'parse_mode' => 'Markdown',
-            ]);
+            foreach ($this->orchestrator->handleStream($user, $text, $currency) as $chunk) {
+                $accumulated .= $chunk;
+                $now = microtime(true);
+
+                // Edit the message every ~0.8 seconds to show progressive output
+                if (($now - $lastEditAt) >= 0.8 && trim($accumulated) !== '') {
+                    try {
+                        Telegram::editMessageText([
+                            'chat_id'    => $chatId,
+                            'message_id' => $messageId,
+                            'text'       => $accumulated . ' ▌',
+                        ]);
+                        $lastEditAt = $now;
+                    } catch (\Throwable) {
+                        // Ignore edit errors (e.g. message unchanged, flood limit)
+                    }
+                }
+            }
+
+            // Final edit — apply parse_mode on the complete response
+            if (trim($accumulated) !== '') {
+                Telegram::editMessageText([
+                    'chat_id'    => $chatId,
+                    'message_id' => $messageId,
+                    'text'       => $accumulated,
+                    'parse_mode' => 'Markdown',
+                ]);
+            }
         } catch (\Throwable) {
-            Telegram::sendMessage([
-                'chat_id' => $chatId,
-                'text'    => '⚠️ Unable to process your request. Please try again.',
-            ]);
+            $errText = $user->language === 'fa'
+                ? '⚠️ پردازش درخواست امکان‌پذیر نیست. دوباره تلاش کنید.'
+                : '⚠️ Unable to process your request. Please try again.';
+            try {
+                Telegram::editMessageText([
+                    'chat_id'    => $chatId,
+                    'message_id' => $messageId,
+                    'text'       => $errText,
+                ]);
+            } catch (\Throwable) {
+                Telegram::sendMessage(['chat_id' => $chatId, 'text' => $errText]);
+            }
         }
     }
 }

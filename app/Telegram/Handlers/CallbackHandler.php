@@ -218,10 +218,11 @@ class CallbackHandler
     private function sendHealthScore(int|string $chatId, User $user, string $lang): void
     {
         Telegram::sendChatAction(['chat_id' => $chatId, 'action' => 'typing']);
-        Telegram::sendMessage([
+        $sent      = Telegram::sendMessage([
             'chat_id' => $chatId,
-            'text'    => $lang === 'fa' ? '⏳ در حال محاسبه امتیاز سلامت مالی...' : '⏳ Calculating your financial health score...',
+            'text'    => $lang === 'fa' ? '⌛ در حال محاسبه امتیاز سلامت مالی...' : '⌛ Calculating your financial health score...',
         ]);
+        $messageId = $sent->getMessageId();
 
         $currency = $user->default_currency ?? 'USD';
         $score    = app(HealthScoreService::class)->calculate($user, $currency);
@@ -258,8 +259,10 @@ class CallbackHandler
                 : "ℹ️ Your account is {$ageDays} day(s) old. Score accuracy improves as you log more transactions.";
         }
 
-        Telegram::sendMessage([
+        // Edit the loading message in-place with the result
+        Telegram::editMessageText([
             'chat_id'      => $chatId,
+            'message_id'   => $messageId,
             'text'         => implode("\n", $lines),
             'parse_mode'   => 'Markdown',
             'reply_markup' => json_encode([
@@ -303,16 +306,18 @@ class CallbackHandler
     private function sendCoaching(int|string $chatId, User $user, string $lang): void
     {
         Telegram::sendChatAction(['chat_id' => $chatId, 'action' => 'typing']);
-        Telegram::sendMessage([
+        $sent      = Telegram::sendMessage([
             'chat_id' => $chatId,
-            'text'    => $lang === 'fa' ? '⏳ در حال آماده کردن مشاوره مالی...' : '⏳ Preparing your financial coaching...',
+            'text'    => $lang === 'fa' ? '⌛ در حال آماده کردن مشاوره مالی...' : '⌛ Preparing your financial coaching...',
         ]);
+        $messageId = $sent->getMessageId();
 
         $currency = $user->default_currency ?? 'USD';
         $coaching = app(FinancialCoachAgent::class)->weeklyCoaching($user, $currency);
 
-        Telegram::sendMessage([
+        Telegram::editMessageText([
             'chat_id'      => $chatId,
+            'message_id'   => $messageId,
             'text'         => ($lang === 'fa' ? "🏋️ *مشاوره مالی*\n\n" : "🏋️ *Financial Coaching*\n\n") . $coaching,
             'parse_mode'   => 'Markdown',
             'reply_markup' => json_encode([

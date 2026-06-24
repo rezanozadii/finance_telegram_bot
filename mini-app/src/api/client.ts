@@ -49,6 +49,9 @@ export const api = {
   categories: (type?: 'income' | 'expense') =>
     request<Category[]>(`/categories${type ? `?type=${type}` : ''}`),
 
+  createCategory: (data: { name: string; type: 'income' | 'expense'; icon?: string; parent_id?: number | null }) =>
+    request<Category>('/categories', { method: 'POST', body: JSON.stringify(data) }),
+
   transactions: (params: {
     limit?: number;
     offset?: number;

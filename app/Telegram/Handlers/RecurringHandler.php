@@ -490,18 +490,28 @@ class RecurringHandler
 
     private function formatTemplateList(\Illuminate\Database\Eloquent\Collection $templates): string
     {
+        $title = "🔁 *" . __('bot.rec_list_title') . "*";
+
         if ($templates->isEmpty()) {
-            return "🔁 *Recurring Transactions*\n\nNo active recurring transactions.";
+            return $title . "\n\n" . __('bot.rec_none');
         }
 
-        $lines = ["🔁 *Recurring Transactions*\n"];
+        $freqMap = [
+            'daily'     => __('bot.btn_freq_daily'),
+            'weekly'    => __('bot.btn_freq_weekly'),
+            'monthly'   => __('bot.btn_freq_monthly'),
+            'yearly'    => __('bot.btn_freq_yearly'),
+        ];
+        $nextLabel = __('bot.rec_label_next_due');
+
+        $lines = [$title . "\n"];
 
         foreach ($templates as $t) {
             $icon  = $t->category?->icon ? $t->category->icon . ' ' : '';
-            $freq  = ucfirst($t->frequency);
+            $freq  = $freqMap[$t->frequency] ?? ucfirst($t->frequency);
             $date  = $t->next_due_date->format('M d');
             $lines[] = "{$icon}*{$t->description}* — {$t->currency} " .
-                number_format($t->amount, 2) . " · {$freq} · next: {$date}";
+                number_format($t->amount, 2) . " · {$freq} · {$nextLabel}: {$date}";
         }
 
         return implode("\n", $lines);

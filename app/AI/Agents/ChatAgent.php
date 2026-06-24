@@ -38,4 +38,16 @@ class ChatAgent extends BaseAgent
             1024
         );
     }
+
+    public function chatStream(User $user, string $question, string $currency): \Generator
+    {
+        $context = $this->gatherContext($user, $this->tools(), ['currency' => $currency]);
+
+        yield from $this->callLlmStream(
+            $this->systemPrompt($user),
+            $question,
+            $context,
+            1024
+        );
+    }
 }
