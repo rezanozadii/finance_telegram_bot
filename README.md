@@ -4,7 +4,7 @@
 
 A full-stack **AI-powered personal finance assistant** built as a Telegram bot + Mini App. Track income and expenses, manage accounts, split costs with friends, and get intelligent coaching from a built-in AI Financial Advisor — all inside Telegram.
 
-> **Latest:** v1.2.8 — Full Persian/Farsi translations for reports, categories, and health score; Carbon 2.x compatibility fix; real Telegram typing indicator added.
+> **Latest:** v1.2.9 — Category/recurring list names now Persian in bot; AI chat streams response frame-by-frame into one message; mini app can create categories.
 
 ---
 
@@ -372,6 +372,14 @@ All endpoints are under `/api/*` and require `Authorization: tma <initDataRaw>` 
 ---
 
 ## Changelog
+
+### v1.2.9
+- **Bot:** Fixed category list showing English names for Persian users — `CategoryHandler::formatCategoryList()` and `showActions()` now call `localizedName()` on each category
+- **Bot:** Fixed recurring transaction list showing hardcoded English text — `formatTemplateList()` now uses `__()` for the title and empty-state message, and translates frequency labels (روزانه / هفتگی / ماهانه / سالانه) and "Next due" from existing lang keys
+- **Bot (AI chat):** Real streaming typing effect — bot now sends one placeholder message and edits it in-place every ~0.8 s as AI tokens arrive; the final edit applies Markdown formatting on the complete response
+- **Bot (Health Score & Coaching):** Loading message is now edited in-place to show the result (no second message)
+- **Mini App:** Categories page has a new **＋** button that opens an inline create-category form (name, emoji icon, income/expense type) with immediate list update on save
+- **API:** `POST /api/categories` route added; validates name, type, icon, and optional parent_id
 
 ### v1.2.8
 - **Bot:** Fixed Persian reports showing English month names — `ReportService::periodLabel()` now returns Farsi month names (e.g. "خرداد ۱۴۰۳") when user language is `fa`
